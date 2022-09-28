@@ -76,10 +76,13 @@ include(FloatTetwildDependencies)
 # FloatTetwild library
 ################################################################################
 
-find_package(GMPfTetWild)
-IF(NOT ${GMP_FOUND})
-	MESSAGE(FATAL_ERROR "Cannot find GMP")
-ENDIF()
+#find_package(GMPfTetWild)
+#IF(NOT ${GMP_FOUND})
+#	MESSAGE(FATAL_ERROR "Cannot find GMP")
+#ENDIF()
+set(GMP_INCLUDE_DIRS external/gmp/include)
+link_directories(external/gmp/lib)
+set(GMP_LIBRARIES libgmp-13)
 
 # find_package(MPFR)
 # IF(NOT ${MPFR_FOUND})
