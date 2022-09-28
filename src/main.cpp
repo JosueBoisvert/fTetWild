@@ -13,16 +13,6 @@
 #include <thread>
 #endif
 
-#include <floattetwild/AABBWrapper.h>
-#include <floattetwild/FloatTetDelaunay.h>
-#include <floattetwild/MeshImprovement.h>
-#include <floattetwild/Simplification.h>
-#include <floattetwild/Statistics.h>
-#include <floattetwild/TriangleInsertion.h>
-#include <floattetwild/CSGTreeParser.hpp>
-#include <floattetwild/Mesh.hpp>
-#include <floattetwild/MeshIO.hpp>
-
 #include <Eigen/Dense>
 
 #include <igl/write_triangle_mesh.h>
@@ -36,13 +26,13 @@
 #include <geogram/mesh/mesh.h>
 #include <bitset>
 
-using namespace floatTetWild;
 using namespace Eigen;
 
 #include <geogram/basic/common.h>
-#include <floattetwild/Predicates.hpp>
 
-#include <floattetwild/MshLoader.h>
+//#include "CLI11.hpp" //TODO: just retrieve the header file
+#include "ftetwild.hpp"
+#include "ftetwild_io.hpp"
 
 struct CLOptions
 {
@@ -63,19 +53,14 @@ int main(int argc, char** argv) {
 
     GEO::initialize();
 
-    // Fill an indices vector of size 20 with values from 0 to 19 and shuffles them
-    std::vector<int> indices(20);
-    std::iota(std::begin(indices), std::end(indices), 0);
-    floatTetWild::Random::shuffle(indices);
-
     GEO::CmdLine::import_arg_group("standard");
     GEO::CmdLine::import_arg_group("pre");
     GEO::CmdLine::import_arg_group("algo");
 
-    CLOptions cl_options;
-    Mesh         mesh;
+    CLOptions          cl_options;
+    floatTetWild::Mesh mesh;
 
-    CLI::App    command_line {"float-tetwild"};
+    CLI::App command_line {"float-tetwild"};
     command_line
       .add_option("-i,--input",
                   mesh.params.input_path,
@@ -85,11 +70,13 @@ int main(int argc, char** argv) {
                             mesh.params.output_path,
                             "Output tetmesh OUTPUT in .msh format. (string, optional, default: "
                             "input_file+postfix+'.msh')");
-    command_line.add_option("--tag", mesh.params.tag_path, "Tag input faces for Boolean operation.")
+    command_line
+      .add_option("--tag", mesh.params.tag_path, "Tag input faces for Boolean operation.")
       ->check(CLI::ExistingFile);
     std::string csg_file;
-    command_line.add_option(
-      "--op", cl_options.boolean_op, "Boolean operation: 0: union, 1: intersection, 2: difference.");
+    command_line.add_option("--op",
+                            cl_options.boolean_op,
+                            "Boolean operation: 0: union, 1: intersection, 2: difference.");
     command_line.add_option(
       "-l,--lr",
       mesh.params.ideal_edge_length_rel,
@@ -99,8 +86,9 @@ int main(int argc, char** argv) {
                             "epsilon = diag_of_bbox * EPS. (double, optional, default: 1e-3)");
 
     command_line.add_option("--max-its", mesh.params.max_its, "(for debugging usage only)");
-    command_line.add_option(
-      "--stop-energy", mesh.params.stop_energy, "Stop optimization when max energy is lower than this.");
+    command_line.add_option("--stop-energy",
+                            mesh.params.stop_energy,
+                            "Stop optimization when max energy is lower than this.");
     command_line.add_option("--stage", mesh.params.stage, "(for debugging usage only)");
     command_line.add_option("--stop-p", mesh.params.stop_p, "(for debugging usage only)");
     command_line.add_option("--postfix", mesh.params.postfix, "(for debugging usage only)");
@@ -108,7 +96,8 @@ int main(int argc, char** argv) {
     command_line.add_flag("--skip-simplify", cl_options.skip_simplify, "skip preprocessing.");
     command_line.add_flag("--no-binary", cl_options.nobinary, "export meshes as ascii");
     command_line.add_flag("--no-color", cl_options.nocolor, "don't export color");
-    command_line.add_flag("--not-sort-input", mesh.params.not_sort_input, "(for debugging usage only)");
+    command_line.add_flag(
+      "--not-sort-input", mesh.params.not_sort_input, "(for debugging usage only)");
     command_line.add_flag("--correct-surface-orientation",
                           mesh.params.correct_surface_orientation,
                           "(for debugging usage only)");
@@ -117,18 +106,22 @@ int main(int argc, char** argv) {
     command_line.add_flag("--export-raw", cl_options.export_raw, "Export raw output.");
     command_line.add_flag(
       "--manifold-surface", mesh.params.manifold_surface, "Force the output to be manifold.");
-    command_line.add_flag("--coarsen", mesh.params.coarsen, "Coarsen the output as much as possible.");
+    command_line.add_flag(
+      "--coarsen", mesh.params.coarsen, "Coarsen the output as much as possible.");
     command_line.add_option("--csg", csg_file, "json file containg a csg tree")
       ->check(CLI::ExistingFile);
-    command_line.add_flag(
-      "--disable-filtering", mesh.params.disable_filtering, "Disable filtering out outside elements.");
+    command_line.add_flag("--disable-filtering",
+                          mesh.params.disable_filtering,
+                          "Disable filtering out outside elements.");
     command_line.add_flag(
       "--use-floodfill", mesh.params.use_floodfill, "Use flood-fill to extract interior volume.");
-    command_line.add_flag("--use-general-wn", mesh.params.use_general_wn, "Use general winding number.");
+    command_line.add_flag(
+      "--use-general-wn", mesh.params.use_general_wn, "Use general winding number.");
     command_line.add_flag(
       "--use-input-for-wn", mesh.params.use_input_for_wn, "Use input surface for winding number.");
     command_line
-      .add_option("--bg-mesh", cl_options.background_mesh, "Background mesh for sizing field (.msh file).")
+      .add_option(
+        "--bg-mesh", cl_options.background_mesh, "Background mesh for sizing field (.msh file).")
       ->check(CLI::ExistingFile);
 
 #ifdef NEW_ENVELOPE
@@ -192,7 +185,7 @@ int main(int argc, char** argv) {
         mesh.params.T_sizing_field      = T_in;
         mesh.params.values_sizing_field = values;
     }
-    std::vector<Vector3>  input_vertices;
+    std::vector<floatTetWild::Vector3>  input_vertices;
     std::vector<Vector3i> input_faces;
     std::vector<int>      input_tags;
     if (!mesh.params.tag_path.empty()) {
@@ -216,12 +209,12 @@ int main(int argc, char** argv) {
         fin.close();
     }
 #endif
-    
+
     GEO::Mesh                sf_mesh;
-    json                     tree_with_ids;
+    nlohmann::json           tree_with_ids;
     std::vector<std::string> meshes;
     if (!csg_file.empty()) {
-        json          csg_tree = json({});
+        nlohmann::json          csg_tree = nlohmann::json({});
         std::ifstream file(csg_file);
 
         if (file.is_open())
@@ -231,9 +224,9 @@ int main(int argc, char** argv) {
         }
         file.close();
 
-        CSGTreeParser::get_meshes(csg_tree, meshes, tree_with_ids);
+        floatTetWild::CSGTreeParser::get_meshes(csg_tree, meshes, tree_with_ids);
 
-        if (!CSGTreeParser::load_and_merge(
+        if (!floatTetWild::CSGTreeParser::load_and_merge(
               meshes, input_vertices, input_faces, sf_mesh, input_tags))
             return -1;
     }
@@ -247,15 +240,15 @@ int main(int argc, char** argv) {
                                input_tags,
                                mesh.params.input_epsr_tags)) {
 #else
-        if (!MeshIO::load_mesh(
+        if (!floatTetWild::MeshIO::load_mesh(
               mesh.params.input_path, input_vertices, input_faces, sf_mesh, input_tags)) {
 #endif
             
-            MeshIO::write_mesh(output_mesh_name, mesh, false);
+            floatTetWild::MeshIO::write_mesh(output_mesh_name, mesh, false);
             return -1;
         }
         else if (input_vertices.empty() || input_faces.empty()) {
-            MeshIO::write_mesh(output_mesh_name, mesh, false);
+            floatTetWild::MeshIO::write_mesh(output_mesh_name, mesh, false);
             return -1;
         }
 
@@ -264,7 +257,7 @@ int main(int argc, char** argv) {
             std::fill(input_tags.begin(), input_tags.end(), 0);
         }
     }
-    AABBWrapper tree(sf_mesh);
+    floatTetWild::AABBWrapper tree(sf_mesh);
     if (!mesh.params.init(tree.get_sf_diag())) {
         return -1;
     }
@@ -319,22 +312,24 @@ int main(int argc, char** argv) {
     }
 #endif
 
+    // PREPROCESSING
     simplify(input_vertices, input_faces, input_tags, tree, mesh.params, cl_options.skip_simplify);
+
     tree.init_b_mesh_and_tree(input_vertices, input_faces, mesh);
     if (mesh.params.log_level <= 1)
-        output_component(input_vertices, input_faces, input_tags);
+        floatTetWild::output_component(input_vertices, input_faces, input_tags);
     std::vector<bool> is_face_inserted(input_faces.size(), false);
-    FloatTetDelaunay::tetrahedralize(input_vertices, input_faces, tree, mesh, is_face_inserted);
+    floatTetWild::FloatTetDelaunay::tetrahedralize(input_vertices, input_faces, tree, mesh, is_face_inserted);
     insert_triangles(input_vertices, input_faces, input_tags, mesh, is_face_inserted, tree, false);
     optimization(
       input_vertices, input_faces, input_tags, is_face_inserted, mesh, tree, {{1, 1, 1, 1}});
     correct_tracked_surface_orientation(mesh, tree);
     if (cl_options.export_raw) {
-        Eigen::Matrix<Scalar, Eigen::Dynamic, 3> Vt;
+        Eigen::Matrix<floatTetWild::Scalar, Eigen::Dynamic, 3> Vt;
         Eigen::Matrix<int, Eigen::Dynamic, 3>    Ft;
 
         if (!csg_file.empty()) {
-            int max_id = CSGTreeParser::get_max_id(tree_with_ids);
+            int max_id = floatTetWild::CSGTreeParser::get_max_id(tree_with_ids);
 
             for (int i = 0; i <= max_id; ++i) {
                 get_tracked_surface(mesh, Vt, Ft, i);
@@ -349,7 +344,7 @@ int main(int argc, char** argv) {
             igl::write_triangle_mesh(
               mesh.params.output_path + "_" + mesh.params.postfix + "_all.obj", Vt, Ft);
         }
-        MeshIO::write_mesh(mesh.params.output_path + "_" + mesh.params.postfix + "_all.msh", mesh, false);
+        floatTetWild::MeshIO::write_mesh(mesh.params.output_path + "_" + mesh.params.postfix + "_all.msh", mesh, false);
     }
     if (!csg_file.empty())
         boolean_operation(mesh, tree_with_ids, meshes);
@@ -384,7 +379,7 @@ int main(int argc, char** argv) {
     else {
         get_surface(mesh, V_sf, F_sf);
     }
-    std::vector<Scalar> colors;
+    std::vector<floatTetWild::Scalar> colors;
     if (!cl_options.nocolor) {
         colors.resize(mesh.tets.size(), -1);
         for (int i = 0; i < mesh.tets.size(); i++) {
@@ -393,7 +388,7 @@ int main(int argc, char** argv) {
             colors[i] = mesh.tets[i].quality;
         }
     }
-    MeshIO::write_mesh(output_mesh_name, mesh, false, colors, !cl_options.nobinary, !csg_file.empty());
+    floatTetWild::MeshIO::write_mesh(output_mesh_name, mesh, false, colors, !cl_options.nobinary, !csg_file.empty());
     igl::write_triangle_mesh(mesh.params.output_path + "_" + mesh.params.postfix + "_sf.obj", V_sf, F_sf);
     return 0;
 }
