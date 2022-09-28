@@ -45,6 +45,11 @@ struct CLOptions
     unsigned int max_threads = std::numeric_limits<unsigned int>::max();
 };
 
+struct InputMesh {
+    std::vector<floatTetWild::Vector3> vertices;
+    std::vector<Vector3i>              faces;
+    std::vector<int>                   tags;
+};
 
 int main(int argc, char** argv) {
 #ifndef WIN32
@@ -156,9 +161,10 @@ int main(int argc, char** argv) {
     tbb::task_scheduler_init scheduler(num_threads, stack_size);
 #endif
 
+    // Sanitize output_path (generate if not specified)
     if (mesh.params.output_path.empty())
         mesh.params.output_path = mesh.params.input_path;
-    std::string output_mesh_name = mesh.params.output_path;
+    std::string output_mesh_name;
     if (mesh.params.output_path.size() > 3 &&
         mesh.params.output_path.substr(mesh.params.output_path.size() - 3, mesh.params.output_path.size()) ==
           "msh")
@@ -169,6 +175,8 @@ int main(int argc, char** argv) {
         output_mesh_name = mesh.params.output_path;
     else
         output_mesh_name = mesh.params.output_path + "_" + mesh.params.postfix + ".msh";
+
+    // Setup the background mesh
     Eigen::VectorXd V_in;
     Eigen::VectorXi T_in;
     Eigen::VectorXd values;
@@ -178,6 +186,7 @@ int main(int argc, char** argv) {
         T_in   = mshLoader.get_elements();
         values = mshLoader.get_node_field("values");
     }
+
     if (V_in.rows() != 0 && T_in.rows() != 0 && values.rows() != 0) {
         mesh.params.apply_sizing_field = true;
 
@@ -185,16 +194,16 @@ int main(int argc, char** argv) {
         mesh.params.T_sizing_field      = T_in;
         mesh.params.values_sizing_field = values;
     }
-    std::vector<floatTetWild::Vector3>  input_vertices;
-    std::vector<Vector3i> input_faces;
-    std::vector<int>      input_tags;
+
+    // Input mesh
+    InputMesh inputMesh;
     if (!mesh.params.tag_path.empty()) {
-        input_tags.reserve(input_faces.size());
+        inputMesh.tags.reserve(inputMesh.faces.size());
         std::string   line;
         std::ifstream fin(mesh.params.tag_path);
         if (fin.is_open()) {
             while (getline(fin, line)) {
-                input_tags.push_back(std::stoi(line));
+                inputMesh.tags.push_back(std::stoi(line));
             }
             fin.close();
         }
@@ -214,8 +223,8 @@ int main(int argc, char** argv) {
     nlohmann::json           tree_with_ids;
     std::vector<std::string> meshes;
     if (!csg_file.empty()) {
-        nlohmann::json          csg_tree = nlohmann::json({});
-        std::ifstream file(csg_file);
+        nlohmann::json csg_tree = nlohmann::json({});
+        std::ifstream  file(csg_file);
 
         if (file.is_open())
             file >> csg_tree;
@@ -227,7 +236,7 @@ int main(int argc, char** argv) {
         floatTetWild::CSGTreeParser::get_meshes(csg_tree, meshes, tree_with_ids);
 
         if (!floatTetWild::CSGTreeParser::load_and_merge(
-              meshes, input_vertices, input_faces, sf_mesh, input_tags))
+              meshes, inputMesh.vertices, inputMesh.faces, sf_mesh, inputMesh.tags))
             return -1;
     }
     else {
@@ -241,20 +250,20 @@ int main(int argc, char** argv) {
                                mesh.params.input_epsr_tags)) {
 #else
         if (!floatTetWild::MeshIO::load_mesh(
-              mesh.params.input_path, input_vertices, input_faces, sf_mesh, input_tags)) {
+              mesh.params.input_path, inputMesh.vertices, inputMesh.faces, sf_mesh, inputMesh.tags)) {
 #endif
             
             floatTetWild::MeshIO::write_mesh(output_mesh_name, mesh, false);
             return -1;
         }
-        else if (input_vertices.empty() || input_faces.empty()) {
+        else if (inputMesh.vertices.empty() || inputMesh.faces.empty()) {
             floatTetWild::MeshIO::write_mesh(output_mesh_name, mesh, false);
             return -1;
         }
 
-        if (input_tags.size() != input_faces.size()) {
-            input_tags.resize(input_faces.size());
-            std::fill(input_tags.begin(), input_tags.end(), 0);
+        if (inputMesh.tags.size() != inputMesh.faces.size()) {
+            inputMesh.tags.resize(inputMesh.faces.size());
+            std::fill(inputMesh.tags.begin(), inputMesh.tags.end(), 0);
         }
     }
     floatTetWild::AABBWrapper tree(sf_mesh);
@@ -313,16 +322,16 @@ int main(int argc, char** argv) {
 #endif
 
     // PREPROCESSING
-    simplify(input_vertices, input_faces, input_tags, tree, mesh.params, cl_options.skip_simplify);
+    simplify(inputMesh.vertices, inputMesh.faces, inputMesh.tags, tree, mesh.params, cl_options.skip_simplify);
 
-    tree.init_b_mesh_and_tree(input_vertices, input_faces, mesh);
+    tree.init_b_mesh_and_tree(inputMesh.vertices, inputMesh.faces, mesh);
     if (mesh.params.log_level <= 1)
-        floatTetWild::output_component(input_vertices, input_faces, input_tags);
-    std::vector<bool> is_face_inserted(input_faces.size(), false);
-    floatTetWild::FloatTetDelaunay::tetrahedralize(input_vertices, input_faces, tree, mesh, is_face_inserted);
-    insert_triangles(input_vertices, input_faces, input_tags, mesh, is_face_inserted, tree, false);
+        floatTetWild::output_component(inputMesh.vertices, inputMesh.faces, inputMesh.tags);
+    std::vector<bool> is_face_inserted(inputMesh.faces.size(), false);
+    floatTetWild::FloatTetDelaunay::tetrahedralize(inputMesh.vertices, inputMesh.faces, tree, mesh, is_face_inserted);
+    insert_triangles(inputMesh.vertices, inputMesh.faces, inputMesh.tags, mesh, is_face_inserted, tree, false);
     optimization(
-      input_vertices, input_faces, input_tags, is_face_inserted, mesh, tree, {{1, 1, 1, 1}});
+      inputMesh.vertices, inputMesh.faces, inputMesh.tags, is_face_inserted, mesh, tree, {{1, 1, 1, 1}});
     correct_tracked_surface_orientation(mesh, tree);
     if (cl_options.export_raw) {
         Eigen::Matrix<floatTetWild::Scalar, Eigen::Dynamic, 3> Vt;
@@ -364,7 +373,7 @@ int main(int argc, char** argv) {
                     filter_outside_floodfill(mesh);
                 }
                 else if (mesh.params.use_input_for_wn) {
-                    filter_outside(mesh, input_vertices, input_faces);
+                    filter_outside(mesh, inputMesh.vertices, inputMesh.faces);
                 }
                 else
                     filter_outside(mesh);
