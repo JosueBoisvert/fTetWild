@@ -13,6 +13,8 @@
 
 
 #include <numeric>
+#include <algorithm>
+#include <random>
 
 namespace floatTetWild {
 
@@ -100,157 +102,66 @@ namespace floatTetWild {
 		}
 	}
 
+  void Mesh::one_ring_edge_set(const std::vector<std::array<int, 2>>&      edges,
+                               const std::vector<bool>&                    v_is_removed,
+                               const std::vector<bool>&                    f_is_removed,
+                               const std::vector<std::unordered_set<int>>& conn_fs,
+                               const std::vector<Vector3>&                 input_vertices,
+                               std::vector<int>&                           safe_set)
+  {
+      std::vector<int> indices(edges.size());
+      std::iota(std::begin(indices), std::end(indices), 0);
+      std::shuffle(indices.begin(), indices.end(), std::mt19937(std::random_device()()));
 
-	void Mesh::one_ring_edge_set(const std::vector<std::array<int, 2>> &edges, const std::vector<bool>& v_is_removed, const std::vector<bool>& f_is_removed,
-	        const std::vector<std::unordered_set<int>>& conn_fs, const std::vector<Vector3>& input_vertices, std::vector<int> &safe_set)
-	{
-		// std::vector<int> indices(edges.size());
-		// std::vector<Scalar> weights(edges.size());
+      std::vector<bool> unsafe_face(f_is_removed.size(), false);
+      safe_set.clear();
+      for (const int e_id : indices) {
+          const auto e = edges[e_id];
+          if (v_is_removed[e[0]] || v_is_removed[e[1]])
+              continue;
 
-		// for(size_t e_id = 0; e_id < edges.size(); ++e_id)
-		// {
-		// 	indices[e_id] = e_id;
-		// 	weights[e_id] = (input_vertices[edges[e_id][0]] - input_vertices[edges[e_id][1]]).squaredNorm();
-		// }
+          bool ok = true;
 
-		// std::sort(indices.begin(), indices.end(), [&](const int i, const int j){ return weights[i] < weights[j]; });
-		std::vector<int> indices(edges.size());
-		std::iota(std::begin(indices), std::end(indices), 0);
-		floatTetWild::Random::shuffle(indices);
+          for (const int f : conn_fs[e[0]]) {
+              if (f_is_removed[f])
+                  continue;
 
-		std::vector<bool> unsafe_face(f_is_removed.size(), false);
-		safe_set.clear();
-		for(const int e_id : indices)
-		{
-			const auto e = edges[e_id];
-			if(v_is_removed[e[0]] || v_is_removed[e[1]])
-				continue;
+              if (unsafe_face[f]) {
+                  ok = false;
+                  break;
+              }
+          }
+          if (!ok)
+              continue;
+          for (const int f : conn_fs[e[1]]) {
+              if (f_is_removed[f])
+                  continue;
 
-			bool ok = true;
+              if (unsafe_face[f]) {
+                  ok = false;
+                  break;
+              }
+          }
+          if (!ok)
+              continue;
 
+          safe_set.push_back(e_id);
 
-			for(const int f : conn_fs[e[0]])
-			{
-				if(f_is_removed[f])
-					continue;
+          for (const int f : conn_fs[e[0]]) {
+              if (f_is_removed[f])
+                  continue;
 
-				if(unsafe_face[f])
-				{
-					ok=false;
-					break;
-				}
-			}
-			if(!ok)
-				continue;
-			for(const int f : conn_fs[e[1]])
-			{
-				if(f_is_removed[f])
-					continue;
+              assert(!unsafe_face[f]);
+              unsafe_face[f] = true;
+          }
+          for (const int f : conn_fs[e[1]]) {
+              if (f_is_removed[f])
+                  continue;
 
-				if(unsafe_face[f])
-				{
-					ok=false;
-					break;
-				}
-			}
-			if(!ok)
-				continue;
-
-			safe_set.push_back(e_id);
-
-			for(const int f : conn_fs[e[0]])
-			{
-				if(f_is_removed[f])
-					continue;
-
-				assert(!unsafe_face[f]);
-				unsafe_face[f]=true;
-			}
-			for(const int f : conn_fs[e[1]])
-			{
-				if(f_is_removed[f])
-					continue;
-
-				// assert(!unsafe_face[f]);
-				unsafe_face[f]=true;
-			}
-		}
-	}
-
-
-	// void Mesh::one_ring_edge_set(const std::vector<std::array<int, 2>> &edges, std::vector<int> &safe_set) const
-	// {
-	// 	// std::vector<int> indices(edges.size());
-	// 	// std::vector<Scalar> weights(edges.size());
-
-	// 	// for(size_t e_id = 0; e_id < edges.size(); ++e_id)
-	// 	// {
-	// 	// 	indices[e_id] = e_id;
-	// 	// 	weights[e_id] = (tet_vertices[edges[e_id][0]].pos - tet_vertices[edges[e_id][1]].pos).squaredNorm();
-	// 	// }
-	// 	// std::sort(indices.begin(), indices.end(), [&](const int i, const int j){ return weights[i] < weights[j]; });
-
-	// 	std::vector<int> indices(edges.size());
-	// 	std::iota(std::begin(indices), std::end(indices), 0);
-	// 	std::random_shuffle(indices.begin(), indices.end());
-
-	// 	std::vector<bool> unsafe_tets(tets.size(), false);
-	// 	safe_set.clear();
-	// 	for(const int e_id : indices)
-	// 	{
-	// 		const auto &e = edges[e_id];
-	// 		if(tet_vertices[e[0]].is_removed || tet_vertices[e[1]].is_removed)
-	// 			continue;
-
-	// 		bool ok = true;
-
-	// 		for(const auto &t : tet_vertices[e[0]].conn_tets)
-	// 		{
-	// 			if(tets[t].is_removed)
-	// 				continue;
-
-	// 			if(unsafe_tets[t])
-	// 			{
-	// 				ok=false;
-	// 				break;
-	// 			}
-	// 		}
-	// 		if(!ok)
-	// 			continue;
-	// 		for(const auto &t : tet_vertices[e[1]].conn_tets)
-	// 		{
-	// 			if(tets[t].is_removed)
-	// 				continue;
-
-	// 			if(unsafe_tets[t])
-	// 			{
-	// 				ok=false;
-	// 				break;
-	// 			}
-	// 		}
-	// 		if(!ok)
-	// 			continue;
-
-	// 		safe_set.push_back(e_id);
-
-	// 		for(const auto &t : tet_vertices[e[0]].conn_tets)
-	// 		{
-	// 			if(tets[t].is_removed)
-	// 				continue;
-
-	// 			assert(!unsafe_tets[t]);
-	// 			unsafe_tets[t]=true;
-	// 		}
-	// 		for(const auto &t : tet_vertices[e[1]].conn_tets)
-	// 		{
-	// 			if(tets[t].is_removed)
-	// 				continue;
-
-	// 			// assert(!unsafe_tets[t]);
-	// 			unsafe_tets[t]=true;
-	// 		}
-	// 	}
-	// }
+              unsafe_face[f] = true;
+          }
+      }
+  }
 
 	void Mesh::partition(const int n_parts, std::vector<std::vector<int>> &tets_id) const
 	{

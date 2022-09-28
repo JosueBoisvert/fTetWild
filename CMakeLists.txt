@@ -151,8 +151,12 @@ endif()
 
 # Main executable
 if(FLOAT_TETWILD_TOPLEVEL_PROJECT)
-	add_executable(${PROJECT_NAME}_bin src/main.cpp)
-	target_include_directories(${PROJECT_NAME}_bin PUBLIC 3rdparty/json/include)
+	set(ftetwild_bin_SOURCE_FILES
+			src/main.cpp
+			src/Mesh.cpp)
+
+	add_executable(${PROJECT_NAME}_bin ${ftetwild_bin_SOURCE_FILES})
+	target_include_directories(${PROJECT_NAME}_bin PUBLIC 3rdparty/json/include src)
 
 
 	target_compile_features(${PROJECT_NAME}_bin PUBLIC ${CXX14_FEATURES})

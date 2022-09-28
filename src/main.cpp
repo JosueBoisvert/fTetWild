@@ -34,8 +34,7 @@ using namespace Eigen;
 #include "ftetwild.hpp"
 #include "ftetwild_io.hpp"
 
-struct CLOptions
-{
+struct CLOptions {
     bool         skip_simplify = false;
     bool         nobinary      = false;
     bool         nocolor       = false;
