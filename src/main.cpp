@@ -44,6 +44,18 @@ using namespace Eigen;
 
 #include <floattetwild/MshLoader.h>
 
+struct CLOptions
+{
+    bool         skip_simplify = false;
+    bool         nobinary      = false;
+    bool         nocolor       = false;
+    bool         export_raw    = false;
+    int          boolean_op    = -1;
+    std::string  background_mesh;
+    unsigned int max_threads = std::numeric_limits<unsigned int>::max();
+};
+
+
 int main(int argc, char** argv) {
 #ifndef WIN32
     setenv("GEO_NO_SIGNAL_HANDLER", "1", 1);
@@ -60,15 +72,8 @@ int main(int argc, char** argv) {
     GEO::CmdLine::import_arg_group("pre");
     GEO::CmdLine::import_arg_group("algo");
 
-    bool        skip_simplify = false;
-    bool        nobinary      = false;
-    bool        nocolor       = false;
-    bool        export_raw    = false;
-    int         boolean_op = -1;
-    std::string background_mesh;
-    unsigned int max_threads = std::numeric_limits<unsigned int>::max();
-
-    Mesh        mesh;
+    CLOptions cl_options;
+    Mesh         mesh;
 
     CLI::App    command_line {"float-tetwild"};
     command_line
@@ -84,7 +89,7 @@ int main(int argc, char** argv) {
       ->check(CLI::ExistingFile);
     std::string csg_file;
     command_line.add_option(
-      "--op", boolean_op, "Boolean operation: 0: union, 1: intersection, 2: difference.");
+      "--op", cl_options.boolean_op, "Boolean operation: 0: union, 1: intersection, 2: difference.");
     command_line.add_option(
       "-l,--lr",
       mesh.params.ideal_edge_length_rel,
@@ -100,16 +105,16 @@ int main(int argc, char** argv) {
     command_line.add_option("--stop-p", mesh.params.stop_p, "(for debugging usage only)");
     command_line.add_option("--postfix", mesh.params.postfix, "(for debugging usage only)");
     command_line.add_flag("-q,--is-quiet", mesh.params.is_quiet, "Mute console output. (optional)");
-    command_line.add_flag("--skip-simplify", skip_simplify, "skip preprocessing.");
-    command_line.add_flag("--no-binary", nobinary, "export meshes as ascii");
-    command_line.add_flag("--no-color", nocolor, "don't export color");
+    command_line.add_flag("--skip-simplify", cl_options.skip_simplify, "skip preprocessing.");
+    command_line.add_flag("--no-binary", cl_options.nobinary, "export meshes as ascii");
+    command_line.add_flag("--no-color", cl_options.nocolor, "don't export color");
     command_line.add_flag("--not-sort-input", mesh.params.not_sort_input, "(for debugging usage only)");
     command_line.add_flag("--correct-surface-orientation",
                           mesh.params.correct_surface_orientation,
                           "(for debugging usage only)");
     command_line.add_flag(
       "--smooth-open-boundary", mesh.params.smooth_open_boundary, "Smooth the open boundary.");
-    command_line.add_flag("--export-raw", export_raw, "Export raw output.");
+    command_line.add_flag("--export-raw", cl_options.export_raw, "Export raw output.");
     command_line.add_flag(
       "--manifold-surface", mesh.params.manifold_surface, "Force the output to be manifold.");
     command_line.add_flag("--coarsen", mesh.params.coarsen, "Coarsen the output as much as possible.");
@@ -123,7 +128,7 @@ int main(int argc, char** argv) {
     command_line.add_flag(
       "--use-input-for-wn", mesh.params.use_input_for_wn, "Use input surface for winding number.");
     command_line
-      .add_option("--bg-mesh", background_mesh, "Background mesh for sizing field (.msh file).")
+      .add_option("--bg-mesh", cl_options.background_mesh, "Background mesh for sizing field (.msh file).")
       ->check(CLI::ExistingFile);
 
 #ifdef NEW_ENVELOPE
@@ -138,7 +143,7 @@ int main(int argc, char** argv) {
 #endif
 
 #ifdef FLOAT_TETWILD_USE_TBB
-    command_line.add_option("--max-threads", max_threads, "Maximum number of threads used");
+    command_line.add_option("--max-threads", cl_options.max_threads, "Maximum number of threads used");
 #endif
 
     try {
@@ -152,7 +157,7 @@ int main(int argc, char** argv) {
     const size_t MB          = 1024 * 1024;
     const size_t stack_size  = 64 * MB;
     unsigned int num_threads = std::max(1u, std::thread::hardware_concurrency());
-    num_threads              = std::min(max_threads, num_threads);
+    num_threads              = std::min(cl_options.max_threads, num_threads);
     mesh.params.num_threads       = num_threads;
     std::cout << "TBB threads " << num_threads << std::endl;
     tbb::task_scheduler_init scheduler(num_threads, stack_size);
@@ -174,8 +179,8 @@ int main(int argc, char** argv) {
     Eigen::VectorXd V_in;
     Eigen::VectorXi T_in;
     Eigen::VectorXd values;
-    if (!background_mesh.empty()) {
-        PyMesh::MshLoader mshLoader(background_mesh);
+    if (!cl_options.background_mesh.empty()) {
+        PyMesh::MshLoader mshLoader(cl_options.background_mesh);
         V_in   = mshLoader.get_nodes();
         T_in   = mshLoader.get_elements();
         values = mshLoader.get_node_field("values");
@@ -314,7 +319,7 @@ int main(int argc, char** argv) {
     }
 #endif
 
-    simplify(input_vertices, input_faces, input_tags, tree, mesh.params, skip_simplify);
+    simplify(input_vertices, input_faces, input_tags, tree, mesh.params, cl_options.skip_simplify);
     tree.init_b_mesh_and_tree(input_vertices, input_faces, mesh);
     if (mesh.params.log_level <= 1)
         output_component(input_vertices, input_faces, input_tags);
@@ -324,7 +329,7 @@ int main(int argc, char** argv) {
     optimization(
       input_vertices, input_faces, input_tags, is_face_inserted, mesh, tree, {{1, 1, 1, 1}});
     correct_tracked_surface_orientation(mesh, tree);
-    if (export_raw) {
+    if (cl_options.export_raw) {
         Eigen::Matrix<Scalar, Eigen::Dynamic, 3> Vt;
         Eigen::Matrix<int, Eigen::Dynamic, 3>    Ft;
 
@@ -348,8 +353,8 @@ int main(int argc, char** argv) {
     }
     if (!csg_file.empty())
         boolean_operation(mesh, tree_with_ids, meshes);
-    else if (boolean_op >= 0)
-        boolean_operation(mesh, boolean_op);
+    else if (cl_options.boolean_op >= 0)
+        boolean_operation(mesh, cl_options.boolean_op);
     else {
         if (mesh.params.smooth_open_boundary) {
             smooth_open_boundary(mesh, tree);
@@ -380,7 +385,7 @@ int main(int argc, char** argv) {
         get_surface(mesh, V_sf, F_sf);
     }
     std::vector<Scalar> colors;
-    if (!nocolor) {
+    if (!cl_options.nocolor) {
         colors.resize(mesh.tets.size(), -1);
         for (int i = 0; i < mesh.tets.size(); i++) {
             if (mesh.tets[i].is_removed)
@@ -388,7 +393,7 @@ int main(int argc, char** argv) {
             colors[i] = mesh.tets[i].quality;
         }
     }
-    MeshIO::write_mesh(output_mesh_name, mesh, false, colors, !nobinary, !csg_file.empty());
+    MeshIO::write_mesh(output_mesh_name, mesh, false, colors, !cl_options.nobinary, !csg_file.empty());
     igl::write_triangle_mesh(mesh.params.output_path + "_" + mesh.params.postfix + "_sf.obj", V_sf, F_sf);
     return 0;
 }
