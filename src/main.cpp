@@ -25,7 +25,7 @@
 #include <floattetwild/MeshIO.hpp>
 
 #include <Eigen/Dense>
-#include <floattetwild/Logger.hpp>
+//#include <floattetwild/Logger.hpp>
 
 #include <igl/Timer.h>
 #include <igl/write_triangle_mesh.h>
@@ -36,50 +36,50 @@
 
 #include <geogram/basic/command_line.h>
 #include <geogram/basic/command_line_args.h>
-#include <geogram/basic/logger.h>
+//#include <geogram/basic/logger.h>
 #include <geogram/mesh/mesh.h>
 #include <bitset>
 
 using namespace floatTetWild;
 using namespace Eigen;
 
-class GeoLoggerForward : public GEO::LoggerClient
-{
-    std::shared_ptr<spdlog::logger> logger_;
-
-  public:
-    template<typename T>
-    GeoLoggerForward(T logger)
-        : logger_(logger)
-    {}
-
-  private:
-    std::string truncate(const std::string& msg)
-    {
-        static size_t prefix_len = GEO::CmdLine::ui_feature(" ", false).size();
-        return msg.substr(prefix_len, msg.size() - 1 - prefix_len);
-    }
-
-  protected:
-    void div(const std::string& title) override
-    {
-        logger_->trace(title.substr(0, title.size() - 1));
-    }
-
-    void out(const std::string& str) override { logger_->info(truncate(str)); }
-
-    void warn(const std::string& str) override { logger_->warn(truncate(str)); }
-
-    void err(const std::string& str) override { logger_->error(truncate(str)); }
-
-    void status(const std::string& str) override
-    {
-        // Errors and warnings are also dispatched as status by geogram, but without
-        // the "feature" header. We thus forward them as trace, to avoid duplicated
-        // logger info...
-        logger_->trace(str.substr(0, str.size() - 1));
-    }
-};
+//class GeoLoggerForward : public GEO::LoggerClient
+//{
+//    std::shared_ptr<spdlog::logger> logger_;
+//
+//  public:
+//    template<typename T>
+//    GeoLoggerForward(T logger)
+//        : logger_(logger)
+//    {}
+//
+//  private:
+//    std::string truncate(const std::string& msg)
+//    {
+//        static size_t prefix_len = GEO::CmdLine::ui_feature(" ", false).size();
+//        return msg.substr(prefix_len, msg.size() - 1 - prefix_len);
+//    }
+//
+//  protected:
+//    void div(const std::string& title) override
+//    {
+//        logger_->trace(title.substr(0, title.size() - 1));
+//    }
+//
+//    void out(const std::string& str) override { logger_->info(truncate(str)); }
+//
+//    void warn(const std::string& str) override { logger_->warn(truncate(str)); }
+//
+//    void err(const std::string& str) override { logger_->error(truncate(str)); }
+//
+//    void status(const std::string& str) override
+//    {
+//        // Errors and warnings are also dispatched as status by geogram, but without
+//        // the "feature" header. We thus forward them as trace, to avoid duplicated
+//        // logger info...
+//        logger_->trace(str.substr(0, str.size() - 1));
+//    }
+//};
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/geometry.h>
@@ -207,8 +207,8 @@ int main(int argc, char** argv)
     command_line.add_option("--stop-p", params.stop_p, "(for debugging usage only)");
 
     command_line.add_option("--postfix", params.postfix, "(for debugging usage only)");
-    command_line.add_option("--log", params.log_path, "Log info to given file.");
-    command_line.add_option("--level", params.log_level, "Log level (0 = most verbose, 6 = off).");
+//    command_line.add_option("--log", params.log_path, "Log info to given file.");
+//    command_line.add_option("--level", params.log_level, "Log level (0 = most verbose, 6 = off).");
 
     command_line.add_flag("-q,--is-quiet", params.is_quiet, "Mute console output. (optional)");
     command_line.add_flag("--skip-simplify", skip_simplify, "skip preprocessing.");
@@ -219,7 +219,7 @@ int main(int argc, char** argv)
                           params.correct_surface_orientation,
                           "(for debugging usage only)");
 
-    command_line.add_option("--envelope-log", params.envelope_log, "(for debugging usage only)");
+//    command_line.add_option("--envelope-log", params.envelope_log, "(for debugging usage only)");
     command_line.add_flag(
       "--smooth-open-boundary", params.smooth_open_boundary, "Smooth the open boundary.");
     command_line.add_flag("--export-raw", export_raw, "Export raw output.");
@@ -282,20 +282,20 @@ int main(int argc, char** argv)
     //        cout.rdbuf(NULL);
     //    }
 
-    Logger::init(!params.is_quiet, params.log_path);
-    params.log_level = std::max(0, std::min(6, params.log_level));
-    spdlog::set_level(static_cast<spdlog::level::level_enum>(params.log_level));
-    spdlog::flush_every(std::chrono::seconds(3));
-
-    GEO::Logger* geo_logger = GEO::Logger::instance();
-    geo_logger->unregister_all_clients();
-    geo_logger->register_client(new GeoLoggerForward(logger().clone("geogram")));
-    geo_logger->set_pretty(false);
+//    Logger::init(!params.is_quiet, params.log_path);
+//    params.log_level = std::max(0, std::min(6, params.log_level));
+//    spdlog::set_level(static_cast<spdlog::level::level_enum>(params.log_level));
+//    spdlog::flush_every(std::chrono::seconds(3));
+//
+//    GEO::Logger* geo_logger = GEO::Logger::instance();
+//    geo_logger->unregister_all_clients();
+//    geo_logger->register_client(new GeoLoggerForward(logger().clone("geogram")));
+//    geo_logger->set_pretty(false);
 
     if (params.output_path.empty())
         params.output_path = params.input_path;
-    if (params.log_path.empty())
-        params.log_path = params.output_path;
+//    if (params.log_path.empty())
+//        params.log_path = params.output_path;
 
     std::string output_mesh_name = params.output_path;
     if (params.output_path.size() > 3 &&
@@ -369,7 +369,7 @@ int main(int argc, char** argv)
         if (file.is_open())
             file >> csg_tree;
         else {
-            logger().error("unable to open {} file", csg_file);
+//            logger().error("unable to open {} file", csg_file);
             return EXIT_FAILURE;
         }
         file.close();
@@ -394,7 +394,7 @@ int main(int argc, char** argv)
         if (!MeshIO::load_mesh(
               params.input_path, input_vertices, input_faces, sf_mesh, input_tags)) {
 #endif
-            logger().error("Unable to load mesh at {}", params.input_path);
+//            logger().error("Unable to load mesh at {}", params.input_path);
             MeshIO::write_mesh(output_mesh_name, mesh, false);
             return EXIT_FAILURE;
         }
@@ -463,13 +463,13 @@ int main(int argc, char** argv)
     }
 #endif
 
-    stats().record(StateInfo::init_id, 0, input_vertices.size(), input_faces.size(), -1, -1);
+//    stats().record(StateInfo::init_id, 0, input_vertices.size(), input_faces.size(), -1, -1);
 
-    timer.start();
+//    timer.start();
     simplify(input_vertices, input_faces, input_tags, tree, params, skip_simplify);
     tree.init_b_mesh_and_tree(input_vertices, input_faces, mesh);
-    logger().info("preprocessing {}s", timer.getElapsedTimeInSec());
-    logger().info("");
+//    logger().info("preprocessing {}s", timer.getElapsedTimeInSec());
+//    logger().info("");
     stats().record(StateInfo::preprocessing_id,
                    timer.getElapsedTimeInSec(),
                    input_vertices.size(),
@@ -479,31 +479,31 @@ int main(int argc, char** argv)
     if (params.log_level <= 1)
         output_component(input_vertices, input_faces, input_tags);
 
-    timer.start();
+//    timer.start();
     std::vector<bool> is_face_inserted(input_faces.size(), false);
     FloatTetDelaunay::tetrahedralize(input_vertices, input_faces, tree, mesh, is_face_inserted);
-    logger().info("#v = {}", mesh.get_v_num());
-    logger().info("#t = {}", mesh.get_t_num());
-    logger().info("tetrahedralizing {}s", timer.getElapsedTimeInSec());
-    logger().info("");
-    stats().record(StateInfo::tetrahedralization_id,
-                   timer.getElapsedTimeInSec(),
-                   mesh.get_v_num(),
-                   mesh.get_t_num(),
-                   -1,
-                   -1);
+//    logger().info("#v = {}", mesh.get_v_num());
+//    logger().info("#t = {}", mesh.get_t_num());
+//    logger().info("tetrahedralizing {}s", timer.getElapsedTimeInSec());
+//    logger().info("");
+//    stats().record(StateInfo::tetrahedralization_id,
+//                   timer.getElapsedTimeInSec(),
+//                   mesh.get_v_num(),
+//                   mesh.get_t_num(),
+//                   -1,
+//                   -1);
 
-    timer.start();
+//    timer.start();
     insert_triangles(input_vertices, input_faces, input_tags, mesh, is_face_inserted, tree, false);
-    logger().info("cutting {}s", timer.getElapsedTimeInSec());
-    logger().info("");
-    stats().record(StateInfo::cutting_id,
-                   timer.getElapsedTimeInSec(),
-                   mesh.get_v_num(),
-                   mesh.get_t_num(),
-                   mesh.get_max_energy(),
-                   mesh.get_avg_energy(),
-                   std::count(is_face_inserted.begin(), is_face_inserted.end(), false));
+//    logger().info("cutting {}s", timer.getElapsedTimeInSec());
+//    logger().info("");
+//    stats().record(StateInfo::cutting_id,
+//                   timer.getElapsedTimeInSec(),
+//                   mesh.get_v_num(),
+//                   mesh.get_t_num(),
+//                   mesh.get_max_energy(),
+//                   mesh.get_avg_energy(),
+//                   std::count(is_face_inserted.begin(), is_face_inserted.end(), false));
 
     //    timer.start();
     ////    cutting(input_vertices, input_faces, mesh, is_face_inserted, tree);
@@ -517,21 +517,21 @@ int main(int argc, char** argv)
     //                                                   std::count(is_face_inserted.begin(),
     //                                                   is_face_inserted.end(), false));
 
-    timer.start();
+//    timer.start();
     optimization(
       input_vertices, input_faces, input_tags, is_face_inserted, mesh, tree, {{1, 1, 1, 1}});
-    logger().info("mesh optimization {}s", timer.getElapsedTimeInSec());
-    logger().info("");
-    stats().record(StateInfo::optimization_id,
-                   timer.getElapsedTimeInSec(),
-                   mesh.get_v_num(),
-                   mesh.get_t_num(),
-                   mesh.get_max_energy(),
-                   mesh.get_avg_energy());
+//    logger().info("mesh optimization {}s", timer.getElapsedTimeInSec());
+//    logger().info("");
+//    stats().record(StateInfo::optimization_id,
+//                   timer.getElapsedTimeInSec(),
+//                   mesh.get_v_num(),
+//                   mesh.get_t_num(),
+//                   mesh.get_max_energy(),
+//                   mesh.get_avg_energy());
 
-    timer.start();
+//    timer.start();
     correct_tracked_surface_orientation(mesh, tree);
-    logger().info("correct_tracked_surface_orientation done");
+//    logger().info("correct_tracked_surface_orientation done");
 
     if (export_raw) {
         Eigen::Matrix<Scalar, Eigen::Dynamic, 3> Vt;
@@ -589,17 +589,17 @@ int main(int argc, char** argv)
     else {
         get_surface(mesh, V_sf, F_sf);
     }
-    stats().record(StateInfo::wn_id,
-                   timer.getElapsedTimeInSec(),
-                   mesh.get_v_num(),
-                   mesh.get_t_num(),
-                   mesh.get_max_energy(),
-                   mesh.get_avg_energy());
-    logger().info("after winding number");
-    logger().info("#v = {}", mesh.get_v_num());
-    logger().info("#t = {}", mesh.get_t_num());
-    logger().info("winding number {}s", timer.getElapsedTimeInSec());
-    logger().info("");
+//    stats().record(StateInfo::wn_id,
+//                   timer.getElapsedTimeInSec(),
+//                   mesh.get_v_num(),
+//                   mesh.get_t_num(),
+//                   mesh.get_max_energy(),
+//                   mesh.get_avg_energy());
+//    logger().info("after winding number");
+//    logger().info("#v = {}", mesh.get_v_num());
+//    logger().info("#t = {}", mesh.get_t_num());
+//    logger().info("winding number {}s", timer.getElapsedTimeInSec());
+//    logger().info("");
 
     //    if (params.output_path.size() > 3
     //        && params.output_path.substr(params.output_path.size() - 3, params.output_path.size())
@@ -627,16 +627,16 @@ int main(int argc, char** argv)
     //    MeshIO::write_surface_mesh(params.output_path + "_" + params.postfix + "_sf.obj", mesh,
     //    false);
 
-    std::ofstream fout(params.log_path + "_" + params.postfix + ".csv");
-    if (fout.good())
-        fout << stats();
-    fout.close();
+//    std::ofstream fout(params.log_path + "_" + params.postfix + ".csv");
+//    if (fout.good())
+//        fout << stats();
+//    fout.close();
 
-    if (!params.envelope_log.empty()) {
-        std::ofstream fout(params.envelope_log);
-        fout << envelope_log_csv;
-        fout.close();
-    }
+//    if (!params.envelope_log.empty()) {
+//        std::ofstream fout(params.envelope_log);
+//        fout << envelope_log_csv;
+//        fout.close();
+//    }
 
     return EXIT_SUCCESS;
 }
