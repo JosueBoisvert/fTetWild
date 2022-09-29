@@ -239,4 +239,61 @@ void Mesh::partition(const int n_parts, std::vector<std::vector<int>>& tets_id) 
     //     // M.cells.permute_elements(new_index);
 }
 
+bool Parameters::init(double bbox_diag_l)
+{
+    if (stage > 5)
+        stage = 5;
+
+    bbox_diag_length = bbox_diag_l;
+
+    ideal_edge_length   = bbox_diag_length * ideal_edge_length_rel;
+    ideal_edge_length_2 = ideal_edge_length * ideal_edge_length;
+
+    eps_input = bbox_diag_length * eps_rel;
+    dd        = eps_input;  // / stage;
+    dd /= 1.5;
+
+#ifdef NEW_ENVELOPE
+    double eps_usable = eps_input;
+        eps_delta         = eps_usable * 0.1;
+        eps               = eps_usable - eps_delta * (stage - 1);
+#else
+    double eps_usable = eps_input - dd / std::sqrt(3);
+    eps_delta         = eps_usable * 0.1;
+    eps               = eps_usable - eps_delta * (stage - 1);
+#endif
+    eps_2 = eps * eps;
+
+    eps_coplanar = eps * 0.2;  // better to set it as eps-related
+    if (eps_coplanar > bbox_diag_length * 1e-6)
+        eps_coplanar = bbox_diag_length * 1e-6;
+    eps_2_coplanar = eps_coplanar * eps_coplanar;
+
+    eps_simplification   = eps * 0.8;
+    eps_2_simplification = eps_simplification * eps_simplification;
+    dd_simplification    = dd / eps * eps_simplification;
+
+    if (min_edge_len_rel < 0)
+        min_edge_len_rel = eps_rel;
+    min_edge_length = bbox_diag_length * min_edge_len_rel;
+
+    split_threshold      = ideal_edge_length * (4 / 3.0);
+    collapse_threshold   = ideal_edge_length * (4 / 5.0);
+    split_threshold_2    = split_threshold * split_threshold;
+    collapse_threshold_2 = collapse_threshold * collapse_threshold;
+
+    std::cout << "bbox_diag_length = " << bbox_diag_length << std::endl;
+    std::cout << "ideal_edge_length = " << ideal_edge_length << std::endl;
+
+    std::cout << "stage = " << stage << std::endl;
+    std::cout << "eps_input = " << eps_input << std::endl;
+    std::cout << "eps = " << eps << std::endl;
+    std::cout << "eps_simplification = " << eps_simplification << std::endl;
+    std::cout << "eps_coplanar = " << eps_coplanar << std::endl;
+
+    std::cout << "dd = " << dd << std::endl;
+    std::cout << "dd_simplification = " << dd_simplification << std::endl;
+
+    return true;
+}
 }  // namespace floatTetWild

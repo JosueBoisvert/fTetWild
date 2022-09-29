@@ -13,6 +13,7 @@
 #include "ftetwild.hpp"
 #include <floattetwild/AABBWrapper.h>
 #include <floattetwild/Types.hpp>
+#include <Eigen/Dense>
 
 namespace floatTetWild {
     void init(Mesh &mesh, AABBWrapper& tree);

@@ -17,6 +17,8 @@
 #include <geogram/delaunay/delaunay_3d.h>
 #include <floattetwild/AABBWrapper.h>
 
+#include <Eigen/Dense>
+
 namespace floatTetWild {
 
 	class FloatTetDelaunay {
