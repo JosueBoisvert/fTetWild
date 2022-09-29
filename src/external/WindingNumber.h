@@ -5606,21 +5606,21 @@ namespace igl { namespace FastWindingNumber {
         namespace HDK_Sample {
 
             template<typename T>
-            using UT_Vector2T = UT_FixedVector<T,2>;
+            using UT_Eigen::Matrix<double, 2, 1>T = UT_FixedVector<T,2>;
             template<typename T>
-            using UT_Vector3T = UT_FixedVector<T,3>;
+            using UT_Eigen::Matrix<double, 3, 1>T = UT_FixedVector<T,3>;
 
             template <typename T>
-            SYS_FORCE_INLINE T cross(const UT_Vector2T<T> &v1, const UT_Vector2T<T> &v2)
+            SYS_FORCE_INLINE T cross(const UT_Eigen::Matrix<double, 2, 1>T<T> &v1, const UT_Eigen::Matrix<double, 2, 1>T<T> &v2)
             {
                 return v1[0]*v2[1] - v1[1]*v2[0];
             }
 
             template <typename T>
             SYS_FORCE_INLINE
-            UT_Vector3T<T> cross(const UT_Vector3T<T> &v1, const UT_Vector3T<T> &v2)
+            UT_Eigen::Matrix<double, 3, 1>T<T> cross(const UT_Eigen::Matrix<double, 3, 1>T<T> &v1, const UT_Eigen::Matrix<double, 3, 1>T<T> &v2)
             {
-                UT_Vector3T<T> result;
+                UT_Eigen::Matrix<double, 3, 1>T<T> result;
                 // compute the cross product:
                 result[0] = v1[1]*v2[2] - v1[2]*v2[1];
                 result[1] = v1[2]*v2[0] - v1[0]*v2[2];
@@ -5637,15 +5637,15 @@ namespace igl { namespace FastWindingNumber {
 ///          positive inside and negative outside.
             template<typename T>
             inline T UTsignedSolidAngleTri(
-                    const UT_Vector3T<T> &a,
-                    const UT_Vector3T<T> &b,
-                    const UT_Vector3T<T> &c,
-                    const UT_Vector3T<T> &query)
+                    const UT_Eigen::Matrix<double, 3, 1>T<T> &a,
+                    const UT_Eigen::Matrix<double, 3, 1>T<T> &b,
+                    const UT_Eigen::Matrix<double, 3, 1>T<T> &c,
+                    const UT_Eigen::Matrix<double, 3, 1>T<T> &query)
             {
                 // Make a, b, and c relative to query
-                UT_Vector3T<T> qa = a-query;
-                UT_Vector3T<T> qb = b-query;
-                UT_Vector3T<T> qc = c-query;
+                UT_Eigen::Matrix<double, 3, 1>T<T> qa = a-query;
+                UT_Eigen::Matrix<double, 3, 1>T<T> qb = b-query;
+                UT_Eigen::Matrix<double, 3, 1>T<T> qc = c-query;
 
                 const T alength = qa.length();
                 const T blength = qb.length();
@@ -5679,14 +5679,14 @@ namespace igl { namespace FastWindingNumber {
 
             template<typename T>
             inline T UTsignedSolidAngleQuad(
-                    const UT_Vector3T<T> &a,
-                    const UT_Vector3T<T> &b,
-                    const UT_Vector3T<T> &c,
-                    const UT_Vector3T<T> &d,
-                    const UT_Vector3T<T> &query)
+                    const UT_Eigen::Matrix<double, 3, 1>T<T> &a,
+                    const UT_Eigen::Matrix<double, 3, 1>T<T> &b,
+                    const UT_Eigen::Matrix<double, 3, 1>T<T> &c,
+                    const UT_Eigen::Matrix<double, 3, 1>T<T> &d,
+                    const UT_Eigen::Matrix<double, 3, 1>T<T> &query)
             {
                 // Make a, b, c, and d relative to query
-                UT_Vector3T<T> v[4] = {
+                UT_Eigen::Matrix<double, 3, 1>T<T> v[4] = {
                         a-query,
                         b-query,
                         c-query,
@@ -5720,10 +5720,10 @@ namespace igl { namespace FastWindingNumber {
                 // query is (approximately) inside, so the choice of triangulation matters.
                 // Otherwise, the triangulation doesn't matter.
 
-                const UT_Vector3T<T> diag02 = v[2]-v[0];
-                const UT_Vector3T<T> diag13 = v[3]-v[1];
-                const UT_Vector3T<T> v01 = v[1]-v[0];
-                const UT_Vector3T<T> v23 = v[3]-v[2];
+                const UT_Eigen::Matrix<double, 3, 1>T<T> diag02 = v[2]-v[0];
+                const UT_Eigen::Matrix<double, 3, 1>T<T> diag13 = v[3]-v[1];
+                const UT_Eigen::Matrix<double, 3, 1>T<T> v01 = v[1]-v[0];
+                const UT_Eigen::Matrix<double, 3, 1>T<T> v23 = v[3]-v[2];
 
                 T bary[4];
                 bary[0] = dot(v[3],cross(v23,diag13));
@@ -5804,7 +5804,7 @@ namespace igl { namespace FastWindingNumber {
                         const int ntriangles,
                         const int *const triangle_points,
                         const int npoints,
-                        const UT_Vector3T<S> *const positions,
+                        const UT_Eigen::Matrix<double, 3, 1>T<S> *const positions,
                         const int order = 2)
                         : UT_SolidAngle()
                 { init(ntriangles, triangle_points, npoints, positions, order); }
@@ -5816,7 +5816,7 @@ namespace igl { namespace FastWindingNumber {
                         const int ntriangles,
                         const int *const triangle_points,
                         const int npoints,
-                        const UT_Vector3T<S> *const positions,
+                        const UT_Eigen::Matrix<double, 3, 1>T<S> *const positions,
                         const int order = 2);
 
                 /// Frees myTree and myData, and clears the rest.
@@ -5828,7 +5828,7 @@ namespace igl { namespace FastWindingNumber {
 
                 /// Returns an approximation of the signed solid angle of the mesh from the specified query_point
                 /// accuracy_scale is the value of (maxP/q) beyond which the approximation of the box will be used.
-                inline T computeSolidAngle(const UT_Vector3T<T> &query_point, const T accuracy_scale = T(2.0)) const;
+                inline T computeSolidAngle(const UT_Eigen::Matrix<double, 3, 1>T<T> &query_point, const T accuracy_scale = T(2.0)) const;
 
             private:
                 struct BoxData;
@@ -5841,18 +5841,18 @@ namespace igl { namespace FastWindingNumber {
                 int myNTriangles;
                 const int *myTrianglePoints;
                 int myNPoints;
-                const UT_Vector3T<S> *myPositions;
+                const UT_Eigen::Matrix<double, 3, 1>T<S> *myPositions;
             };
 
             template<typename T>
             inline T UTsignedAngleSegment(
-                    const UT_Vector2T<T> &a,
-                    const UT_Vector2T<T> &b,
-                    const UT_Vector2T<T> &query)
+                    const UT_Eigen::Matrix<double, 2, 1>T<T> &a,
+                    const UT_Eigen::Matrix<double, 2, 1>T<T> &b,
+                    const UT_Eigen::Matrix<double, 2, 1>T<T> &query)
             {
                 // Make a and b relative to query
-                UT_Vector2T<T> qa = a-query;
-                UT_Vector2T<T> qb = b-query;
+                UT_Eigen::Matrix<double, 2, 1>T<T> qa = a-query;
+                UT_Eigen::Matrix<double, 2, 1>T<T> qb = b-query;
 
                 // If any segment vertices are coincident with query,
                 // query is on the segment, which we treat as no angle.
@@ -5895,7 +5895,7 @@ namespace igl { namespace FastWindingNumber {
                         const int nsegments,
                         const int *const segment_points,
                         const int npoints,
-                        const UT_Vector2T<S> *const positions,
+                        const UT_Eigen::Matrix<double, 2, 1>T<S> *const positions,
                         const int order = 2)
                         : UT_SubtendedAngle()
                 { init(nsegments, segment_points, npoints, positions, order); }
@@ -5907,7 +5907,7 @@ namespace igl { namespace FastWindingNumber {
                         const int nsegments,
                         const int *const segment_points,
                         const int npoints,
-                        const UT_Vector2T<S> *const positions,
+                        const UT_Eigen::Matrix<double, 2, 1>T<S> *const positions,
                         const int order = 2);
 
                 /// Frees myTree and myData, and clears the rest.
@@ -5919,7 +5919,7 @@ namespace igl { namespace FastWindingNumber {
 
                 /// Returns an approximation of the signed solid angle of the mesh from the specified query_point
                 /// accuracy_scale is the value of (maxP/q) beyond which the approximation of the box will be used.
-                inline T computeAngle(const UT_Vector2T<T> &query_point, const T accuracy_scale = T(2.0)) const;
+                inline T computeAngle(const UT_Eigen::Matrix<double, 2, 1>T<T> &query_point, const T accuracy_scale = T(2.0)) const;
 
             private:
                 struct BoxData;
@@ -5932,7 +5932,7 @@ namespace igl { namespace FastWindingNumber {
                 int myNSegments;
                 const int *mySegmentPoints;
                 int myNPoints;
-                const UT_Vector2T<S> *myPositions;
+                const UT_Eigen::Matrix<double, 2, 1>T<S> *myPositions;
             };
 
         } // End HDK_Sample namespace
@@ -6109,7 +6109,7 @@ namespace igl { namespace FastWindingNumber {
                     const int ntriangles,
                     const int *const triangle_points,
                     const int npoints,
-                    const UT_Vector3T<S> *const positions,
+                    const UT_Eigen::Matrix<double, 3, 1>T<S> *const positions,
                     const int order)
             {
 #if SOLID_ANGLE_DEBUG
@@ -6178,23 +6178,23 @@ namespace igl { namespace FastWindingNumber {
                     UT::Box<S,3> myBox;
 
                     // P and N are needed from each child for computing Nij.
-                    UT_Vector3T<T> myAverageP;
-                    UT_Vector3T<T> myAreaP;
-                    UT_Vector3T<T> myN;
+                    UT_Eigen::Matrix<double, 3, 1>T<T> myAverageP;
+                    UT_Eigen::Matrix<double, 3, 1>T<T> myAreaP;
+                    UT_Eigen::Matrix<double, 3, 1>T<T> myN;
 
                     // Unsigned area is needed for computing the average position.
                     T myArea;
 
 #if TAYLOR_SERIES_ORDER >= 1
                     // These are needed for computing Nijk.
-                    UT_Vector3T<T> myNijDiag;
+                    UT_Eigen::Matrix<double, 3, 1>T<T> myNijDiag;
                     T myNxy; T myNyx;
                     T myNyz; T myNzy;
                     T myNzx; T myNxz;
 #endif
 
 #if TAYLOR_SERIES_ORDER >= 2
-                    UT_Vector3T<T> myNijkDiag; // Nxxx, Nyyy, Nzzz
+                    UT_Eigen::Matrix<double, 3, 1>T<T> myNijkDiag; // Nxxx, Nyyy, Nzzz
                     T mySumPermuteNxyz; // (Nxyz+Nxzy+Nyzx+Nyxz+Nzxy+Nzyx) = 2*(Nxyz+Nyzx+Nzxy)
                     T my2Nxxy_Nyxx;     // Nxxy+Nxyx+Nyxx = 2Nxxy+Nyxx
                     T my2Nxxz_Nzxx;     // Nxxz+Nxzx+Nzxx = 2Nxxz+Nzxx
@@ -6210,14 +6210,14 @@ namespace igl { namespace FastWindingNumber {
                     BoxData *const myBoxData;
                     const UT::Box<S,3> *const myTriangleBoxes;
                     const int *const myTrianglePoints;
-                    const UT_Vector3T<S> *const myPositions;
+                    const UT_Eigen::Matrix<double, 3, 1>T<S> *const myPositions;
                     const int myOrder;
 
                     PrecomputeFunctors(
                             BoxData *box_data,
                             const UT::Box<S,3> *triangle_boxes,
                             const int *triangle_points,
-                            const UT_Vector3T<S> *positions,
+                            const UT_Eigen::Matrix<double, 3, 1>T<S> *positions,
                             const int order)
                             : myBoxData(box_data)
                             , myTriangleBoxes(triangle_boxes)
@@ -6231,22 +6231,22 @@ namespace igl { namespace FastWindingNumber {
                     }
                     void item(const int itemi, const int parent_nodei, LocalData &data_for_parent) const
                     {
-                        const UT_Vector3T<S> *const positions = myPositions;
+                        const UT_Eigen::Matrix<double, 3, 1>T<S> *const positions = myPositions;
                         const int *const cur_triangle_points = myTrianglePoints + 3*itemi;
-                        const UT_Vector3T<T> a = positions[cur_triangle_points[0]];
-                        const UT_Vector3T<T> b = positions[cur_triangle_points[1]];
-                        const UT_Vector3T<T> c = positions[cur_triangle_points[2]];
-                        const UT_Vector3T<T> ab = b-a;
-                        const UT_Vector3T<T> ac = c-a;
+                        const UT_Eigen::Matrix<double, 3, 1>T<T> a = positions[cur_triangle_points[0]];
+                        const UT_Eigen::Matrix<double, 3, 1>T<T> b = positions[cur_triangle_points[1]];
+                        const UT_Eigen::Matrix<double, 3, 1>T<T> c = positions[cur_triangle_points[2]];
+                        const UT_Eigen::Matrix<double, 3, 1>T<T> ab = b-a;
+                        const UT_Eigen::Matrix<double, 3, 1>T<T> ac = c-a;
 
                         const UT::Box<S,3> &triangle_box = myTriangleBoxes[itemi];
                         data_for_parent.myBox.initBounds(triangle_box.getMin(), triangle_box.getMax());
 
                         // Area-weighted normal (unnormalized)
-                        const UT_Vector3T<T> N = T(0.5)*cross(ab,ac);
+                        const UT_Eigen::Matrix<double, 3, 1>T<T> N = T(0.5)*cross(ab,ac);
                         const T area2 = N.length2();
                         const T area = SYSsqrt(area2);
-                        const UT_Vector3T<T> P = (a+b+c)/3;
+                        const UT_Eigen::Matrix<double, 3, 1>T<T> P = (a+b+c)/3;
                         data_for_parent.myAverageP = P;
                         data_for_parent.myAreaP = P*area;
                         data_for_parent.myN = N;
@@ -6289,11 +6289,11 @@ namespace igl { namespace FastWindingNumber {
                         }
 
                         // We need to use the NORMALIZED normal to multiply the integrals by.
-                        UT_Vector3T<T> n = N/area;
+                        UT_Eigen::Matrix<double, 3, 1>T<T> n = N/area;
 
                         // Figure out the order of a, b, and c in x, y, and z
                         // for use in computing the integrals for Nijk.
-                        UT_Vector3T<T> values[3] = {a, b, c};
+                        UT_Eigen::Matrix<double, 3, 1>T<T> values[3] = {a, b, c};
 
                         int order_x[3] = {0,1,2};
                         if (a[0] > b[0])
@@ -6323,10 +6323,10 @@ namespace igl { namespace FastWindingNumber {
                         T dz = values[order_z[2]][2] - values[order_z[0]][2];
 
                         auto &&compute_integrals = [](
-                                const UT_Vector3T<T> &a,
-                                const UT_Vector3T<T> &b,
-                                const UT_Vector3T<T> &c,
-                                const UT_Vector3T<T> &P,
+                                const UT_Eigen::Matrix<double, 3, 1>T<T> &a,
+                                const UT_Eigen::Matrix<double, 3, 1>T<T> &b,
+                                const UT_Eigen::Matrix<double, 3, 1>T<T> &c,
+                                const UT_Eigen::Matrix<double, 3, 1>T<T> &P,
                                 T *integral_ii,
                                 T *integral_ij,
                                 T *integral_ik,
@@ -6337,9 +6337,9 @@ namespace igl { namespace FastWindingNumber {
 #endif
                             // NOTE: a, b, and c must be in order of the i axis.
                             // We're splitting the triangle at the middle i coordinate.
-                            const UT_Vector3T<T> oab = b - a;
-                            const UT_Vector3T<T> oac = c - a;
-                            const UT_Vector3T<T> ocb = b - c;
+                            const UT_Eigen::Matrix<double, 3, 1>T<T> oab = b - a;
+                            const UT_Eigen::Matrix<double, 3, 1>T<T> oac = c - a;
+                            const UT_Eigen::Matrix<double, 3, 1>T<T> ocb = b - c;
                             UT_ASSERT_MSG_P(oac[i] > 0, "This should have been checked by the caller.");
                             const T t = oab[i]/oac[i];
                             UT_ASSERT_MSG_P(t >= 0 && t <= 1, "Either sorting must have gone wrong, or there are input NaNs.");
@@ -6348,11 +6348,11 @@ namespace igl { namespace FastWindingNumber {
                             const int k = (j==2) ? 0 : (j+1);
                             const T jdiff = t*oac[j] - oab[j];
                             const T kdiff = t*oac[k] - oab[k];
-                            UT_Vector3T<T> cross_a;
+                            UT_Eigen::Matrix<double, 3, 1>T<T> cross_a;
                             cross_a[0] = (jdiff*oab[k] - kdiff*oab[j]);
                             cross_a[1] = kdiff*oab[i];
                             cross_a[2] = jdiff*oab[i];
-                            UT_Vector3T<T> cross_c;
+                            UT_Eigen::Matrix<double, 3, 1>T<T> cross_c;
                             cross_c[0] = (jdiff*ocb[k] - kdiff*ocb[j]);
                             cross_c[1] = kdiff*ocb[i];
                             cross_c[2] = jdiff*ocb[i];
@@ -6427,7 +6427,7 @@ namespace igl { namespace FastWindingNumber {
                                     &integral_zz, ((dx < dz && dx > 0) ? &integral_zx : nullptr), ((dy < dz && dy > 0) ? &integral_yz : nullptr), 2);
                         }
 
-                        UT_Vector3T<T> Niii;
+                        UT_Eigen::Matrix<double, 3, 1>T<T> Niii;
                         Niii[0] = integral_xx;
                         Niii[1] = integral_yy;
                         Niii[2] = integral_zz;
@@ -6460,26 +6460,26 @@ namespace igl { namespace FastWindingNumber {
 
                         BoxData &current_box_data = myBoxData[nodei];
 
-                        UT_Vector3T<T> N = child_data_array[0].myN;
+                        UT_Eigen::Matrix<double, 3, 1>T<T> N = child_data_array[0].myN;
                         ((T*)&current_box_data.myN[0])[0] = N[0];
                         ((T*)&current_box_data.myN[1])[0] = N[1];
                         ((T*)&current_box_data.myN[2])[0] = N[2];
-                        UT_Vector3T<T> areaP = child_data_array[0].myAreaP;
+                        UT_Eigen::Matrix<double, 3, 1>T<T> areaP = child_data_array[0].myAreaP;
                         T area = child_data_array[0].myArea;
-                        UT_Vector3T<T> local_P = child_data_array[0].myAverageP;
+                        UT_Eigen::Matrix<double, 3, 1>T<T> local_P = child_data_array[0].myAverageP;
                         ((T*)&current_box_data.myAverageP[0])[0] = local_P[0];
                         ((T*)&current_box_data.myAverageP[1])[0] = local_P[1];
                         ((T*)&current_box_data.myAverageP[2])[0] = local_P[2];
                         for (int i = 1; i < nchildren; ++i)
                         {
-                            const UT_Vector3T<T> local_N = child_data_array[i].myN;
+                            const UT_Eigen::Matrix<double, 3, 1>T<T> local_N = child_data_array[i].myN;
                             N += local_N;
                             ((T*)&current_box_data.myN[0])[i] = local_N[0];
                             ((T*)&current_box_data.myN[1])[i] = local_N[1];
                             ((T*)&current_box_data.myN[2])[i] = local_N[2];
                             areaP += child_data_array[i].myAreaP;
                             area += child_data_array[i].myArea;
-                            const UT_Vector3T<T> local_P = child_data_array[i].myAverageP;
+                            const UT_Eigen::Matrix<double, 3, 1>T<T> local_P = child_data_array[i].myAverageP;
                             ((T*)&current_box_data.myAverageP[0])[i] = local_P[0];
                             ((T*)&current_box_data.myAverageP[1])[i] = local_P[1];
                             ((T*)&current_box_data.myAverageP[2])[i] = local_P[2];
@@ -6503,7 +6503,7 @@ namespace igl { namespace FastWindingNumber {
                             box.enlargeBounds(child_data_array[i].myBox);
 
                         // Normalize P
-                        UT_Vector3T<T> averageP;
+                        UT_Eigen::Matrix<double, 3, 1>T<T> averageP;
                         if (area > 0)
                             averageP = areaP/area;
                         else
@@ -6515,8 +6515,8 @@ namespace igl { namespace FastWindingNumber {
                         for (int i = 0; i < nchildren; ++i)
                         {
                             const UT::Box<S,3> &local_box(child_data_array[i].myBox);
-                            const UT_Vector3T<T> &local_P = child_data_array[i].myAverageP;
-                            const UT_Vector3T<T> maxPDiff = SYSmax(local_P-UT_Vector3T<T>(local_box.getMin()), UT_Vector3T<T>(local_box.getMax())-local_P);
+                            const UT_Eigen::Matrix<double, 3, 1>T<T> &local_P = child_data_array[i].myAverageP;
+                            const UT_Eigen::Matrix<double, 3, 1>T<T> maxPDiff = SYSmax(local_P-UT_Eigen::Matrix<double, 3, 1>T<T>(local_box.getMin()), UT_Eigen::Matrix<double, 3, 1>T<T>(local_box.getMax())-local_P);
                             ((T*)&current_box_data.myMaxPDist2)[i] = maxPDiff.length2();
                         }
                         for (int i = nchildren; i < BVH_N; ++i)
@@ -6616,8 +6616,8 @@ namespace igl { namespace FastWindingNumber {
                             for (int i = 0; i < nchildren; ++i)
                             {
                                 const LocalData &child_data = child_data_array[i];
-                                UT_Vector3T<T> displacement = child_data.myAverageP - UT_Vector3T<T>(data_for_parent->myAverageP);
-                                UT_Vector3T<T> N = child_data.myN;
+                                UT_Eigen::Matrix<double, 3, 1>T<T> displacement = child_data.myAverageP - UT_Eigen::Matrix<double, 3, 1>T<T>(data_for_parent->myAverageP);
+                                UT_Eigen::Matrix<double, 3, 1>T<T> N = child_data.myN;
 
                                 // Adjust Nij for the change in centre P
                                 data_for_parent->myNijDiag += N*displacement;
@@ -6710,25 +6710,25 @@ namespace igl { namespace FastWindingNumber {
             }
 
             template<typename T,typename S>
-            inline T UT_SolidAngle<T, S>::computeSolidAngle(const UT_Vector3T<T> &query_point, const T accuracy_scale) const
+            inline T UT_SolidAngle<T, S>::computeSolidAngle(const UT_Eigen::Matrix<double, 3, 1>T<T> &query_point, const T accuracy_scale) const
             {
                 const T accuracy_scale2 = accuracy_scale*accuracy_scale;
 
                 struct SolidAngleFunctors
                 {
                     const BoxData *const myBoxData;
-                    const UT_Vector3T<T> myQueryPoint;
+                    const UT_Eigen::Matrix<double, 3, 1>T<T> myQueryPoint;
                     const T myAccuracyScale2;
-                    const UT_Vector3T<S> *const myPositions;
+                    const UT_Eigen::Matrix<double, 3, 1>T<S> *const myPositions;
                     const int *const myTrianglePoints;
                     const int myOrder;
 
                     SolidAngleFunctors(
                             const BoxData *const box_data,
-                            const UT_Vector3T<T> &query_point,
+                            const UT_Eigen::Matrix<double, 3, 1>T<T> &query_point,
                             const T accuracy_scale2,
                             const int order,
-                            const UT_Vector3T<S> *const positions,
+                            const UT_Eigen::Matrix<double, 3, 1>T<S> *const positions,
                             const int *const triangle_points)
                             : myBoxData(box_data)
                             , myQueryPoint(query_point)
@@ -6823,11 +6823,11 @@ namespace igl { namespace FastWindingNumber {
                     }
                     void item(const int itemi, const int parent_nodei, T &data_for_parent) const
                     {
-                        const UT_Vector3T<S> *const positions = myPositions;
+                        const UT_Eigen::Matrix<double, 3, 1>T<S> *const positions = myPositions;
                         const int *const cur_triangle_points = myTrianglePoints + 3*itemi;
-                        const UT_Vector3T<T> a = positions[cur_triangle_points[0]];
-                        const UT_Vector3T<T> b = positions[cur_triangle_points[1]];
-                        const UT_Vector3T<T> c = positions[cur_triangle_points[2]];
+                        const UT_Eigen::Matrix<double, 3, 1>T<T> a = positions[cur_triangle_points[0]];
+                        const UT_Eigen::Matrix<double, 3, 1>T<T> b = positions[cur_triangle_points[1]];
+                        const UT_Eigen::Matrix<double, 3, 1>T<T> c = positions[cur_triangle_points[2]];
 
                         data_for_parent = UTsignedSolidAngleTri(a, b, c, myQueryPoint);
                     }
@@ -6907,7 +6907,7 @@ namespace igl { namespace FastWindingNumber {
                     const int nsegments,
                     const int *const segment_points,
                     const int npoints,
-                    const UT_Vector2T<S> *const positions,
+                    const UT_Eigen::Matrix<double, 2, 1>T<S> *const positions,
                     const int order)
             {
 #if SOLID_ANGLE_DEBUG
@@ -6974,18 +6974,18 @@ namespace igl { namespace FastWindingNumber {
                     UT::Box<S,2> myBox;
 
                     // P and N are needed from each child for computing Nij.
-                    UT_Vector2T<T> myAverageP;
-                    UT_Vector2T<T> myLengthP;
-                    UT_Vector2T<T> myN;
+                    UT_Eigen::Matrix<double, 2, 1>T<T> myAverageP;
+                    UT_Eigen::Matrix<double, 2, 1>T<T> myLengthP;
+                    UT_Eigen::Matrix<double, 2, 1>T<T> myN;
 
                     // Unsigned length is needed for computing the average position.
                     T myLength;
 
                     // These are needed for computing Nijk.
-                    UT_Vector2T<T> myNijDiag;
+                    UT_Eigen::Matrix<double, 2, 1>T<T> myNijDiag;
                     T myNxy; T myNyx;
 
-                    UT_Vector2T<T> myNijkDiag; // Nxxx, Nyyy
+                    UT_Eigen::Matrix<double, 2, 1>T<T> myNijkDiag; // Nxxx, Nyyy
                     T my2Nxxy_Nyxx;     // Nxxy+Nxyx+Nyxx = 2Nxxy+Nyxx
                     T my2Nyyx_Nxyy;     // Nyyx+Nyxy+Nxyy = 2Nyyx+Nxyy
                 };
@@ -6995,14 +6995,14 @@ namespace igl { namespace FastWindingNumber {
                     BoxData *const myBoxData;
                     const UT::Box<S,2> *const mySegmentBoxes;
                     const int *const mySegmentPoints;
-                    const UT_Vector2T<S> *const myPositions;
+                    const UT_Eigen::Matrix<double, 2, 1>T<S> *const myPositions;
                     const int myOrder;
 
                     PrecomputeFunctors(
                             BoxData *box_data,
                             const UT::Box<S,2> *segment_boxes,
                             const int *segment_points,
-                            const UT_Vector2T<S> *positions,
+                            const UT_Eigen::Matrix<double, 2, 1>T<S> *positions,
                             const int order)
                             : myBoxData(box_data)
                             , mySegmentBoxes(segment_boxes)
@@ -7016,22 +7016,22 @@ namespace igl { namespace FastWindingNumber {
                     }
                     void item(const int itemi, const int parent_nodei, LocalData &data_for_parent) const
                     {
-                        const UT_Vector2T<S> *const positions = myPositions;
+                        const UT_Eigen::Matrix<double, 2, 1>T<S> *const positions = myPositions;
                         const int *const cur_segment_points = mySegmentPoints + 2*itemi;
-                        const UT_Vector2T<T> a = positions[cur_segment_points[0]];
-                        const UT_Vector2T<T> b = positions[cur_segment_points[1]];
-                        const UT_Vector2T<T> ab = b-a;
+                        const UT_Eigen::Matrix<double, 2, 1>T<T> a = positions[cur_segment_points[0]];
+                        const UT_Eigen::Matrix<double, 2, 1>T<T> b = positions[cur_segment_points[1]];
+                        const UT_Eigen::Matrix<double, 2, 1>T<T> ab = b-a;
 
                         const UT::Box<S,2> &segment_box = mySegmentBoxes[itemi];
                         data_for_parent.myBox = segment_box;
 
                         // Length-weighted normal (unnormalized)
-                        UT_Vector2T<T> N;
+                        UT_Eigen::Matrix<double, 2, 1>T<T> N;
                         N[0] = ab[1];
                         N[1] = -ab[0];
                         const T length2 = ab.length2();
                         const T length = SYSsqrt(length2);
-                        const UT_Vector2T<T> P = T(0.5)*(a+b);
+                        const UT_Eigen::Matrix<double, 2, 1>T<T> P = T(0.5)*(a+b);
                         data_for_parent.myAverageP = P;
                         data_for_parent.myLengthP = P*length;
                         data_for_parent.myN = N;
@@ -7087,23 +7087,23 @@ namespace igl { namespace FastWindingNumber {
 
                         BoxData &current_box_data = myBoxData[nodei];
 
-                        UT_Vector2T<T> N = child_data_array[0].myN;
+                        UT_Eigen::Matrix<double, 2, 1>T<T> N = child_data_array[0].myN;
                         ((T*)&current_box_data.myN[0])[0] = N[0];
                         ((T*)&current_box_data.myN[1])[0] = N[1];
-                        UT_Vector2T<T> lengthP = child_data_array[0].myLengthP;
+                        UT_Eigen::Matrix<double, 2, 1>T<T> lengthP = child_data_array[0].myLengthP;
                         T length = child_data_array[0].myLength;
-                        const UT_Vector2T<T> local_P = child_data_array[0].myAverageP;
+                        const UT_Eigen::Matrix<double, 2, 1>T<T> local_P = child_data_array[0].myAverageP;
                         ((T*)&current_box_data.myAverageP[0])[0] = local_P[0];
                         ((T*)&current_box_data.myAverageP[1])[0] = local_P[1];
                         for (int i = 1; i < nchildren; ++i)
                         {
-                            const UT_Vector2T<T> local_N = child_data_array[i].myN;
+                            const UT_Eigen::Matrix<double, 2, 1>T<T> local_N = child_data_array[i].myN;
                             N += local_N;
                             ((T*)&current_box_data.myN[0])[i] = local_N[0];
                             ((T*)&current_box_data.myN[1])[i] = local_N[1];
                             lengthP += child_data_array[i].myLengthP;
                             length += child_data_array[i].myLength;
-                            const UT_Vector2T<T> local_P = child_data_array[i].myAverageP;
+                            const UT_Eigen::Matrix<double, 2, 1>T<T> local_P = child_data_array[i].myAverageP;
                             ((T*)&current_box_data.myAverageP[0])[i] = local_P[0];
                             ((T*)&current_box_data.myAverageP[1])[i] = local_P[1];
                         }
@@ -7124,7 +7124,7 @@ namespace igl { namespace FastWindingNumber {
                             box.combine(child_data_array[i].myBox);
 
                         // Normalize P
-                        UT_Vector2T<T> averageP;
+                        UT_Eigen::Matrix<double, 2, 1>T<T> averageP;
                         if (length > 0)
                             averageP = lengthP/length;
                         else
@@ -7136,8 +7136,8 @@ namespace igl { namespace FastWindingNumber {
                         for (int i = 0; i < nchildren; ++i)
                         {
                             const UT::Box<S,2> &local_box(child_data_array[i].myBox);
-                            const UT_Vector2T<T> &local_P = child_data_array[i].myAverageP;
-                            const UT_Vector2T<T> maxPDiff = SYSmax(local_P-UT_Vector2T<T>(local_box.getMin()), UT_Vector2T<T>(local_box.getMax())-local_P);
+                            const UT_Eigen::Matrix<double, 2, 1>T<T> &local_P = child_data_array[i].myAverageP;
+                            const UT_Eigen::Matrix<double, 2, 1>T<T> maxPDiff = SYSmax(local_P-UT_Eigen::Matrix<double, 2, 1>T<T>(local_box.getMin()), UT_Eigen::Matrix<double, 2, 1>T<T>(local_box.getMax())-local_P);
                             ((T*)&current_box_data.myMaxPDist2)[i] = maxPDiff.length2();
                         }
                         for (int i = nchildren; i < BVH_N; ++i)
@@ -7197,8 +7197,8 @@ namespace igl { namespace FastWindingNumber {
                             for (int i = 0; i < nchildren; ++i)
                             {
                                 const LocalData &child_data = child_data_array[i];
-                                UT_Vector2T<T> displacement = child_data.myAverageP - UT_Vector2T<T>(data_for_parent->myAverageP);
-                                UT_Vector2T<T> N = child_data.myN;
+                                UT_Eigen::Matrix<double, 2, 1>T<T> displacement = child_data.myAverageP - UT_Eigen::Matrix<double, 2, 1>T<T>(data_for_parent->myAverageP);
+                                UT_Eigen::Matrix<double, 2, 1>T<T> N = child_data.myN;
 
                                 // Adjust Nij for the change in centre P
                                 data_for_parent->myNijDiag += N*displacement;
@@ -7261,25 +7261,25 @@ namespace igl { namespace FastWindingNumber {
             }
 
             template<typename T,typename S>
-            inline T UT_SubtendedAngle<T, S>::computeAngle(const UT_Vector2T<T> &query_point, const T accuracy_scale) const
+            inline T UT_SubtendedAngle<T, S>::computeAngle(const UT_Eigen::Matrix<double, 2, 1>T<T> &query_point, const T accuracy_scale) const
             {
                 const T accuracy_scale2 = accuracy_scale*accuracy_scale;
 
                 struct AngleFunctors
                 {
                     const BoxData *const myBoxData;
-                    const UT_Vector2T<T> myQueryPoint;
+                    const UT_Eigen::Matrix<double, 2, 1>T<T> myQueryPoint;
                     const T myAccuracyScale2;
-                    const UT_Vector2T<S> *const myPositions;
+                    const UT_Eigen::Matrix<double, 2, 1>T<S> *const myPositions;
                     const int *const mySegmentPoints;
                     const int myOrder;
 
                     AngleFunctors(
                             const BoxData *const box_data,
-                            const UT_Vector2T<T> &query_point,
+                            const UT_Eigen::Matrix<double, 2, 1>T<T> &query_point,
                             const T accuracy_scale2,
                             const int order,
-                            const UT_Vector2T<S> *const positions,
+                            const UT_Eigen::Matrix<double, 2, 1>T<S> *const positions,
                             const int *const segment_points)
                             : myBoxData(box_data)
                             , myQueryPoint(query_point)
@@ -7364,10 +7364,10 @@ namespace igl { namespace FastWindingNumber {
                     }
                     void item(const int itemi, const int parent_nodei, T &data_for_parent) const
                     {
-                        const UT_Vector2T<S> *const positions = myPositions;
+                        const UT_Eigen::Matrix<double, 2, 1>T<S> *const positions = myPositions;
                         const int *const cur_segment_points = mySegmentPoints + 2*itemi;
-                        const UT_Vector2T<T> a = positions[cur_segment_points[0]];
-                        const UT_Vector2T<T> b = positions[cur_segment_points[1]];
+                        const UT_Eigen::Matrix<double, 2, 1>T<T> a = positions[cur_segment_points[0]];
+                        const UT_Eigen::Matrix<double, 2, 1>T<T> b = positions[cur_segment_points[1]];
 
                         data_for_parent = UTsignedAngleSegment(a, b, myQueryPoint);
                     }

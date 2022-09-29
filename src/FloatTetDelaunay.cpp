@@ -25,7 +25,7 @@
 namespace floatTetWild {
 	namespace {
         void
-        get_bb_corners(const Parameters &params, const std::vector<Vector3> &vertices, Vector3 &min, Vector3 &max) {
+        get_bb_corners(const Parameters &params, const std::vector<Eigen::Matrix<double, 3, 1>> &vertices, Eigen::Matrix<double, 3, 1> &min, Eigen::Matrix<double, 3, 1> &max) {
             min = vertices.front();
             max = vertices.front();
 
@@ -36,8 +36,8 @@ namespace floatTetWild {
                 }
             }
 
-//            const Scalar dis = std::max((max - min).minCoeff() * params.box_scale, params.eps_input * 2);
-            const Scalar dis = std::max(params.ideal_edge_length, params.eps_input * 2);
+//            const double dis = std::max((max - min).minCoeff() * params.box_scale, params.eps_input * 2);
+            const double dis = std::max(params.ideal_edge_length, params.eps_input * 2);
             for (int j = 0; j < 3; j++) {
                 min[j] -= dis;
                 max[j] += dis;
@@ -51,8 +51,8 @@ namespace floatTetWild {
             return std::tuple<int, int, int>(a[0], a[1], a[2]) < std::tuple<int, int, int>(b[0], b[1], b[2]);
         }
 
-        void match_surface_fs(Mesh &mesh, const std::vector<Vector3> &input_vertices,
-                              const std::vector<Vector3i> &input_faces, std::vector<bool> &is_face_inserted) {
+        void match_surface_fs(Mesh &mesh, const std::vector<Eigen::Matrix<double, 3, 1>> &input_vertices,
+                              const std::vector<Eigen::Matrix<int, 3, 1>> &input_faces, std::vector<bool> &is_face_inserted) {
             std::vector<std::array<int, 4>> input_fs(input_faces.size());
             for (int i = 0; i < input_faces.size(); i++) {
                 input_fs[i] = {{input_faces[i][0], input_faces[i][1], input_faces[i][2], i}};
@@ -99,11 +99,11 @@ namespace floatTetWild {
             }
         }
 
-        void match_bbox_fs(Mesh &mesh, const Vector3 &min, const Vector3 &max) {
+        void match_bbox_fs(Mesh &mesh, const Eigen::Matrix<double, 3, 1> &min, const Eigen::Matrix<double, 3, 1> &max) {
             auto get_bbox_fs = [&](const MeshTet &t, int j) {
                 std::array<int, 6> cnts = {{0, 0, 0, 0, 0, 0}};
                 for (int k = 0; k < 3; k++) {
-                    Vector3 &pos = mesh.tet_vertices[t[(j + k + 1) % 4]].pos;
+                    Eigen::Matrix<double, 3, 1> &pos = mesh.tet_vertices[t[(j + k + 1) % 4]].pos;
                     for (int n = 0; n < 3; n++) {
                         if (pos[n] == min[n])
                             cnts[n * 2]++;
@@ -126,15 +126,15 @@ namespace floatTetWild {
         }
 
         void
-        compute_voxel_points(const Vector3 &min, const Vector3 &max, const Parameters &params, const AABBWrapper &tree,
-                             std::vector<Vector3> &voxels) {
-            const Vector3 diag = max - min;
-            Vector3i n_voxels = (diag / (params.bbox_diag_length * params.box_scale)).cast<int>();
+        compute_voxel_points(const Eigen::Matrix<double, 3, 1> &min, const Eigen::Matrix<double, 3, 1> &max, const Parameters &params, const AABBWrapper &tree,
+                             std::vector<Eigen::Matrix<double, 3, 1>> &voxels) {
+            const Eigen::Matrix<double, 3, 1> diag = max - min;
+            Eigen::Matrix<int, 3, 1> n_voxels = (diag / (params.bbox_diag_length * params.box_scale)).cast<int>();
 
             for (int d = 0; d < 3; ++d)
                 n_voxels(d) = std::max(n_voxels(d), 1);
 
-            const Vector3 delta = diag.array() / n_voxels.array().cast<Scalar>();
+            const Eigen::Matrix<double, 3, 1> delta = diag.array() / n_voxels.array().cast<Scalar>();
 
             voxels.clear();
             voxels.reserve((n_voxels(0) + 1) * (n_voxels(1) + 1) * (n_voxels(2) + 1));
@@ -144,12 +144,12 @@ namespace floatTetWild {
             GEO::vec3 nearest_point;
 
             for (int i = 0; i <= n_voxels(0); ++i) {
-                const Scalar px = (i == n_voxels(0)) ? max(0) : (min(0) + delta(0) * i);
+                const double px = (i == n_voxels(0)) ? max(0) : (min(0) + delta(0) * i);
                 for (int j = 0; j <= n_voxels(1); ++j) {
-                    const Scalar py = (j == n_voxels(1)) ? max(1) : (min(1) + delta(1) * j);
+                    const double py = (j == n_voxels(1)) ? max(1) : (min(1) + delta(1) * j);
                     for (int k = 0; k <= n_voxels(2); ++k) {
-                        const Scalar pz = (k == n_voxels(2)) ? max(2) : (min(2) + delta(2) * k);
-                        if (tree.get_sq_dist_to_sf(Vector3(px, py, pz)) > sq_distg)
+                        const double pz = (k == n_voxels(2)) ? max(2) : (min(2) + delta(2) * k);
+                        if (tree.get_sq_dist_to_sf(Eigen::Matrix<double, 3, 1>(px, py, pz)) > sq_distg)
                             voxels.emplace_back(px, py, pz);
                     }
                 }
@@ -161,7 +161,7 @@ namespace floatTetWild {
 //#include <floattetwild/Predicates.hpp>
 //    extern "C" floatTetWild::Scalar orient3d(const floatTetWild::Scalar *pa, const floatTetWild::Scalar *pb, const floatTetWild::Scalar *pc, const floatTetWild::Scalar *pd);
 
-	void FloatTetDelaunay::tetrahedralize(const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, const AABBWrapper &tree,
+	void FloatTetDelaunay::tetrahedralize(const std::vector<Eigen::Matrix<double, 3, 1>>& input_vertices, const std::vector<Eigen::Matrix<int, 3, 1>>& input_faces, const AABBWrapper &tree,
 	        Mesh &mesh, std::vector<bool> &is_face_inserted) {
         const Parameters &params = mesh.params;
         auto &tet_vertices = mesh.tet_vertices;
@@ -169,12 +169,12 @@ namespace floatTetWild {
 
         is_face_inserted.resize(input_faces.size(), false);
 
-        Vector3 min, max;
+        Eigen::Matrix<double, 3, 1> min, max;
         get_bb_corners(params, input_vertices, min, max);
         mesh.params.bbox_min = min;
         mesh.params.bbox_max = max;
 
-        std::vector<Vector3> boxpoints; //(8);
+        std::vector<Eigen::Matrix<double, 3, 1>> boxpoints; //(8);
         // for (int i = 0; i < 8; i++) {
         //     auto &p = boxpoints[i];
         //     std::bitset<sizeof(int) * 8> flag(i);
@@ -187,7 +187,7 @@ namespace floatTetWild {
         // }
 
 
-        std::vector<Vector3> voxel_points;
+        std::vector<Eigen::Matrix<double, 3, 1>> voxel_points;
         compute_voxel_points(min, max, params, tree, voxel_points);
 
         const int n_pts = input_vertices.size() + boxpoints.size() + voxel_points.size();

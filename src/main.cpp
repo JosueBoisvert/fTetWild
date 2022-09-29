@@ -45,8 +45,8 @@ struct CLOptions {
 };
 
 struct InputMesh {
-    std::vector<floatTetWild::Vector3> vertices;
-    std::vector<Vector3i>              faces;
+    std::vector<floatTetWild::Eigen::Matrix<double, 3, 1>> vertices;
+    std::vector<Eigen::Matrix<int, 3, 1>>              faces;
     std::vector<int>                   tags;
 };
 

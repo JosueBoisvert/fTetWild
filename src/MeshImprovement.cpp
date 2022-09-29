@@ -134,7 +134,7 @@ void floatTetWild::init(Mesh &mesh, AABBWrapper& tree) {
     }
 }
 
-void floatTetWild::optimization(const std::vector<Vector3> &input_vertices, const std::vector<Vector3i> &input_faces, const std::vector<int> &input_tags, std::vector<bool> &is_face_inserted,
+void floatTetWild::optimization(const std::vector<Eigen::Matrix<double, 3, 1>> &input_vertices, const std::vector<Eigen::Matrix<int, 3, 1>> &input_faces, const std::vector<int> &input_tags, std::vector<bool> &is_face_inserted,
         Mesh &mesh, AABBWrapper& tree, const std::array<int, 4> &ops) {
     init(mesh, tree);
 
@@ -158,7 +158,7 @@ void floatTetWild::optimization(const std::vector<Vector3> &input_vertices, cons
         if (mesh.is_input_all_inserted)
             it_after_al_inserted++;
 
-        Scalar max_energy, avg_energy;
+        double max_energy, avg_energy;
         get_max_avg_energy(mesh, max_energy, avg_energy);
         if (max_energy <= mesh.params.stop_energy && mesh.is_input_all_inserted)
             break;
@@ -189,7 +189,7 @@ void floatTetWild::optimization(const std::vector<Vector3> &input_vertices, cons
             }
         }
 
-        Scalar new_max_energy, new_avg_energy;
+        double new_max_energy, new_avg_energy;
         get_max_avg_energy(mesh, new_max_energy, new_avg_energy);
         if (!is_just_after_update) {
             if (max_energy - new_max_energy < 5e-1 && (avg_energy - new_avg_energy) / avg_energy < 0.1) {
@@ -404,7 +404,7 @@ void floatTetWild::operation(Mesh &mesh, AABBWrapper& tree, const std::array<int
     }
 }
 
-void floatTetWild::operation(const std::vector<Vector3> &input_vertices, const std::vector<Vector3i> &input_faces, const std::vector<int> &input_tags, std::vector<bool> &is_face_inserted,
+void floatTetWild::operation(const std::vector<Eigen::Matrix<double, 3, 1>> &input_vertices, const std::vector<Eigen::Matrix<int, 3, 1>> &input_faces, const std::vector<int> &input_tags, std::vector<bool> &is_face_inserted,
         Mesh &mesh, AABBWrapper& tree, const std::array<int, 5> &ops) {
     operation(mesh, tree, {{ops[0], ops[1], ops[2], ops[3]}});
 
@@ -612,19 +612,19 @@ void floatTetWild::operation(const std::vector<Vector3> &input_vertices, const s
 }
 
 #include <geogram/points/kd_tree.h>
-bool floatTetWild::update_scaling_field(Mesh &mesh, Scalar max_energy) {
+bool floatTetWild::update_scaling_field(Mesh &mesh, double max_energy) {
 //    return false;
 
     cout << "updating sclaing field ..." << endl;
     bool is_hit_min_edge_length = false;
 
-    Scalar radius0 = mesh.params.ideal_edge_length * 1.8;//increasing the radius would increase the #v in output
+    double radius0 = mesh.params.ideal_edge_length * 1.8;//increasing the radius would increase the #v in output
 //    if(is_hit_min)
 //        radius0 *= 2;
 
-    static const Scalar stop_filter_energy = mesh.params.stop_energy * 0.8;
+    static const double stop_filter_energy = mesh.params.stop_energy * 0.8;
 
-    Scalar filter_energy = max_energy / 100 > stop_filter_energy ? max_energy / 100 : stop_filter_energy;
+    double filter_energy = max_energy / 100 > stop_filter_energy ? max_energy / 100 : stop_filter_energy;
 //    if(filter_energy > 1e3)
 //        filter_energy = 1e3;
 
@@ -636,10 +636,10 @@ bool floatTetWild::update_scaling_field(Mesh &mesh, Scalar max_energy) {
     }
 
     cout << "filter_energy = " << filter_energy << endl;
-    Scalar recover = 1.5;
+    double recover = 1.5;
     std::vector<Scalar> scale_multipliers(mesh.tet_vertices.size(), recover);
-    Scalar refine_scale = 0.5;
-    Scalar min_refine_scale = mesh.params.min_edge_len_rel / mesh.params.ideal_edge_length_rel;
+    double refine_scale = 0.5;
+    double min_refine_scale = mesh.params.min_edge_len_rel / mesh.params.ideal_edge_length_rel;
 
     const int N = -int(std::log2(min_refine_scale) - 1);
     std::vector<std::vector<int>> v_ids(N, std::vector<int>());
@@ -666,7 +666,7 @@ bool floatTetWild::update_scaling_field(Mesh &mesh, Scalar max_energy) {
         if (v_ids[n].size() == 0)
             continue;
 
-        Scalar radius = radius0 / std::pow(2, n);
+        double radius = radius0 / std::pow(2, n);
 
         std::unordered_set<int> is_visited;
         std::queue<int> v_queue;
@@ -700,11 +700,11 @@ bool floatTetWild::update_scaling_field(Mesh &mesh, Scalar max_energy) {
                                          mesh.tet_vertices[mesh.tets[t_id][j]].pos[1],
                                          mesh.tet_vertices[mesh.tets[t_id][j]].pos[2]};
                     nnsearch->get_nearest_neighbors(1, p, &_, &sq_dist);
-                    Scalar dis = sqrt(sq_dist);
+                    double dis = sqrt(sq_dist);
 
                     if (dis < radius) {
                         v_queue.push(mesh.tets[t_id][j]);
-                        Scalar new_ss = (dis / radius) * (1 - refine_scale) + refine_scale;
+                        double new_ss = (dis / radius) * (1 - refine_scale) + refine_scale;
                         if (new_ss < scale_multipliers[mesh.tets[t_id][j]])
                             scale_multipliers[mesh.tets[t_id][j]] = new_ss;
                     }
@@ -719,7 +719,7 @@ bool floatTetWild::update_scaling_field(Mesh &mesh, Scalar max_energy) {
         auto& v = mesh.tet_vertices[i];
         if (v.is_removed)
             continue;
-        Scalar new_scale = v.sizing_scalar * scale_multipliers[i];
+        double new_scale = v.sizing_scalar * scale_multipliers[i];
         if (new_scale > 1)
             v.sizing_scalar = 1;
 //        if (new_scale > mesh.tri_vertices[i].max_scale)
@@ -752,7 +752,7 @@ void floatTetWild::output_info(Mesh& mesh, const AABBWrapper& tree) {
 //    cout << "#t = " << cnt_t << "(" << tets.size() << ")" << endl;
 
 //    //quality
-//    Scalar max_energy, avg_energy;
+//    double max_energy, avg_energy;
 //    get_max_avg_energy(mesh, max_energy, avg_energy);
 //    cout << "max_energy = " << max_energy << endl;
 //    cout << "avg_energy = " << avg_energy << endl;
@@ -760,7 +760,7 @@ void floatTetWild::output_info(Mesh& mesh, const AABBWrapper& tree) {
 //    for (int i = 0; i < tets.size(); i++) {
 //        if (tets[i].is_removed)
 //            continue;
-//        Scalar q = get_quality(mesh, i);
+//        double q = get_quality(mesh, i);
 //        if (abs(tets[i].quality - q) / tets[i].quality > 0.01) {
 //            cout << "tets[i].quality != get_quality(mesh,i)" << endl;
 //            cout << tets[i].quality << " - " << q << " = " << tets[i].quality - q << endl;
@@ -768,7 +768,7 @@ void floatTetWild::output_info(Mesh& mesh, const AABBWrapper& tree) {
 //        }
 //    }
 
-//    Scalar max_energy = 0;
+//    double max_energy = 0;
 //    int max_i = -1;
 //    for (int i = 0; i < tets.size(); i++) {
 //        if (tets[i].is_removed)
@@ -1073,8 +1073,8 @@ void floatTetWild::check_envelope(Mesh& mesh, const AABBWrapper& tree) {//for de
 //    if (mesh.params.log_level >= 1)
 //        return;
 
-//    Scalar check_eps = mesh.params.eps_input * mesh.params.eps_input;
-    Scalar check_eps = mesh.params.eps_2;
+//    double check_eps = mesh.params.eps_input * mesh.params.eps_input;
+    double check_eps = mesh.params.eps_2;
 
     for (auto &t: mesh.tets) {
         if (t.is_removed)
@@ -1085,7 +1085,7 @@ void floatTetWild::check_envelope(Mesh& mesh, const AABBWrapper& tree) {//for de
                 sample_triangle({{mesh.tet_vertices[t[(j + 1) % 4]].pos, mesh.tet_vertices[t[(j + 2) % 4]].pos,
                                          mesh.tet_vertices[t[(j + 3) % 4]].pos}}, ps, mesh.params.dd);
                 if(tree.is_out_sf_envelope(ps, mesh.params.eps_2)){
-//                Scalar d = tree.dist_sf_envelope(ps, check_eps);
+//                double d = tree.dist_sf_envelope(ps, check_eps);
 //                if (d > mesh.params.eps_2) {
                     cout << "out of envelope!" << endl;
 //                    cout << d << ", eps_input = " << check_eps << endl;
@@ -1100,7 +1100,7 @@ void floatTetWild::check_envelope(Mesh& mesh, const AABBWrapper& tree) {//for de
             continue;
 
         std::vector<GEO::vec3> ps = {GEO::vec3(v.pos[0], v.pos[1], v.pos[2])};
-        Scalar d = tree.dist_sf_envelope(ps, check_eps);
+        double d = tree.dist_sf_envelope(ps, check_eps);
         if (d > mesh.params.eps_2) {
             cout << "v out of envelope!" << endl;
             cout << d << ", eps_input = " << check_eps << endl;
@@ -1113,22 +1113,22 @@ void floatTetWild::check_envelope(Mesh& mesh, const AABBWrapper& tree) {//for de
 
 int floatTetWild::get_max_p(const Mesh &mesh)
 {
-    const Scalar scaling = 1.0 / (mesh.params.bbox_max - mesh.params.bbox_min).maxCoeff();
-    const Scalar B = 3;
+    const double scaling = 1.0 / (mesh.params.bbox_max - mesh.params.bbox_min).maxCoeff();
+    const double B = 3;
     const int p_ref = 1;
 
     std::vector<std::array<int, 2>> edges;
     get_all_edges(mesh, edges);
-    Scalar h_ref = 0;
+    double h_ref = 0;
     //mesh.params.ideal_edge_length;
     for(const auto &e : edges){
-        const Vector3 edge = (mesh.tet_vertices[e[0]].pos - mesh.tet_vertices[e[1]].pos)*scaling;
+        const Eigen::Matrix<double, 3, 1> edge = (mesh.tet_vertices[e[0]].pos - mesh.tet_vertices[e[1]].pos)*scaling;
         h_ref += edge.norm();
     }
     h_ref /= edges.size();
 
-    const Scalar rho_ref = sqrt(6.)/12.*h_ref;
-    const Scalar sigma_ref = rho_ref / h_ref;
+    const double rho_ref = sqrt(6.)/12.*h_ref;
+    const double sigma_ref = rho_ref / h_ref;
 
     int max_p = 1;
 
@@ -1153,14 +1153,14 @@ int floatTetWild::get_max_p(const Mesh &mesh)
 
         const Eigen::Matrix<Scalar, 6, 1> en = e.rowwise().norm();
 
-        const Scalar S = (e.row(0).cross(e.row(1)).norm() + e.row(0).cross(e.row(4)).norm() + e.row(4).cross(e.row(1)).norm() + e.row(2).cross(e.row(5)).norm()) / 2;
-        const Scalar V = std::abs(e.row(3).dot(e.row(2).cross(-e.row(0))))/6;
-        const Scalar rho = 3 * V / S;
-        const Scalar h = en.maxCoeff();
+        const double S = (e.row(0).cross(e.row(1)).norm() + e.row(0).cross(e.row(4)).norm() + e.row(4).cross(e.row(1)).norm() + e.row(2).cross(e.row(5)).norm()) / 2;
+        const double V = std::abs(e.row(3).dot(e.row(2).cross(-e.row(0))))/6;
+        const double rho = 3 * V / S;
+        const double h = en.maxCoeff();
 
-        const Scalar sigma = rho / h;
+        const double sigma = rho / h;
 
-        const Scalar ptmp = (std::log(B*std::pow(h_ref, p_ref + 1)*sigma*sigma/sigma_ref/sigma_ref) - std::log(h))/std::log(h);
+        const double ptmp = (std::log(B*std::pow(h_ref, p_ref + 1)*sigma*sigma/sigma_ref/sigma_ref) - std::log(h))/std::log(h);
         const int p = (int)std::round(ptmp);
         max_p = std::max(p, max_p);
     }
@@ -1259,14 +1259,14 @@ void floatTetWild::output_surface(Mesh& mesh, const std::string& filename) {
 //            continue;
 //
 //        //compute barycenter
-//        std::array<Vector3, 4> vs;
+//        std::array<Eigen::Matrix<double, 3, 1>, 4> vs;
 //        for (int j = 0; j < 4; j++) {
-//            vs[j] = Vector3(V_in(T_in(bg_t_id * 4 + j) * 3), V_in(T_in(bg_t_id * 4 + j) * 3 + 1),
+//            vs[j] = Eigen::Matrix<double, 3, 1>(V_in(T_in(bg_t_id * 4 + j) * 3), V_in(T_in(bg_t_id * 4 + j) * 3 + 1),
 //                            V_in(T_in(bg_t_id * 4 + j) * 3 + 2));
 //        }
 //        double value = 0;
 //        for (int j = 0; j < 4; j++) {
-//            Vector3 n = ((vs[(j + 1) % 4] - vs[j]).cross(vs[(j + 2) % 4] - vs[j])).normalized();
+//            Eigen::Matrix<double, 3, 1> n = ((vs[(j + 1) % 4] - vs[j]).cross(vs[(j + 2) % 4] - vs[j])).normalized();
 //            double d = (vs[(j + 3) % 4] - vs[j]).dot(n);
 //            if(d == 0)
 //                continue;
@@ -1312,22 +1312,22 @@ void floatTetWild::apply_sizingfield(Mesh& mesh, AABBWrapper& tree) {
     }
     GEO::MeshCellsAABB bg_aabb(bg_mesh, false);
 
-    auto get_sizing_field_value = [&](const Vector3& p) {
+    auto get_sizing_field_value = [&](const Eigen::Matrix<double, 3, 1>& p) {
         GEO::vec3 geo_p(p[0], p[1], p[2]);
         int  bg_t_id = bg_aabb.containing_tet(geo_p);
         if (bg_t_id == GEO::MeshCellsAABB::NO_TET)
             return -1.;
 
         // compute barycenter
-        std::array<Vector3, 4> vs;
+        std::array<Eigen::Matrix<double, 3, 1>, 4> vs;
         for (int j = 0; j < 4; j++) {
-            vs[j] = Vector3(mesh.params.V_sizing_field(mesh.params.T_sizing_field(bg_t_id * 4 + j) * 3),
+            vs[j] = Eigen::Matrix<double, 3, 1>(mesh.params.V_sizing_field(mesh.params.T_sizing_field(bg_t_id * 4 + j) * 3),
                             mesh.params.V_sizing_field(mesh.params.T_sizing_field(bg_t_id * 4 + j) * 3 + 1),
                             mesh.params.V_sizing_field(mesh.params.T_sizing_field(bg_t_id * 4 + j) * 3 + 2));
         }
         double value = 0;
         for (int j = 0; j < 4; j++) {
-            Vector3 n = ((vs[(j + 1) % 4] - vs[j]).cross(vs[(j + 2) % 4] - vs[j])).normalized();
+            Eigen::Matrix<double, 3, 1> n = ((vs[(j + 1) % 4] - vs[j]).cross(vs[(j + 2) % 4] - vs[j])).normalized();
             double  d = (vs[(j + 3) % 4] - vs[j]).dot(n);
             if (d == 0)
                 continue;
@@ -1455,14 +1455,14 @@ void floatTetWild::correct_tracked_surface_orientation(Mesh &mesh, AABBWrapper& 
             int k = get_local_f_id(opp_t_id, t[(j + 1) % 4], t[(j + 2) % 4], t[(j + 3) % 4], mesh);
             is_visited[opp_t_id][k] = true;
             //
-            Vector3 c = (mesh.tet_vertices[t[(j + 1) % 4]].pos + mesh.tet_vertices[t[(j + 2) % 4]].pos +
+            Eigen::Matrix<double, 3, 1> c = (mesh.tet_vertices[t[(j + 1) % 4]].pos + mesh.tet_vertices[t[(j + 2) % 4]].pos +
                          mesh.tet_vertices[t[(j + 3) % 4]].pos) / 3;
             int f_id = tree.get_nearest_face_sf(c);
             const auto &fv1 = tree.sf_mesh.vertices.point(tree.sf_mesh.facets.vertex(f_id, 0));
             const auto &fv2 = tree.sf_mesh.vertices.point(tree.sf_mesh.facets.vertex(f_id, 1));
             const auto &fv3 = tree.sf_mesh.vertices.point(tree.sf_mesh.facets.vertex(f_id, 2));
             auto nf = GEO::cross((fv2 - fv1), (fv3 - fv1));
-            Vector3 n, nt;
+            Eigen::Matrix<double, 3, 1> n, nt;
             n << nf[0], nf[1], nf[2];
             //
             auto &tv1 = mesh.tet_vertices[mesh.tets[t_id][(j + 1) % 4]].pos;
@@ -1486,7 +1486,7 @@ void floatTetWild::correct_tracked_surface_orientation(Mesh &mesh, AABBWrapper& 
 }
 
 
-void floatTetWild::boolean_operation(Mesh& mesh, const json& csg_tree_with_ids, const std::vector<std::string> &meshes)
+void floatTetWild::boolean_operation(Mesh& mesh, const nlohmann::json& csg_tree_with_ids, const std::vector<std::string> &meshes)
 {
     Eigen::MatrixXd C(mesh.get_t_num(), 3);
     C.setZero();
@@ -1521,8 +1521,8 @@ void floatTetWild::boolean_operation(Mesh& mesh, const json& csg_tree_with_ids, 
         }
     }
     else {
-        std::vector<std::vector<Vector3>>  Vs;
-        std::vector<std::vector<Vector3i>> Fs;
+        std::vector<std::vector<Eigen::Matrix<double, 3, 1>>>  Vs;
+        std::vector<std::vector<Eigen::Matrix<int, 3, 1>>> Fs;
 
         Vs.resize(meshes.size());
         Fs.resize(meshes.size());
@@ -1558,11 +1558,11 @@ void floatTetWild::boolean_operation(Mesh& mesh, const json& csg_tree_with_ids, 
     boolean_operation(mesh, csg_tree_with_ids, w);
 }
 
-void floatTetWild::boolean_operation(Mesh& mesh, const json &csg_tree_with_ids){
+void floatTetWild::boolean_operation(Mesh& mesh, const nlohmann::json &csg_tree_with_ids){
     boolean_operation(mesh, csg_tree_with_ids, std::vector<std::string>());
 }
 
-void floatTetWild::boolean_operation(Mesh& mesh, const json &csg_tree_with_ids, const std::vector<Eigen::VectorXd> &w)
+void floatTetWild::boolean_operation(Mesh& mesh, const nlohmann::json &csg_tree_with_ids, const std::vector<Eigen::VectorXd> &w)
 {
     int max_id = CSGTreeParser::get_max_id(csg_tree_with_ids);
 
@@ -1719,7 +1719,7 @@ void floatTetWild::filter_outside(Mesh& mesh, bool invert_faces) {
     }
 }
 
-void floatTetWild::filter_outside(Mesh& mesh, const std::vector<Vector3> &input_vertices, const std::vector<Vector3i> &input_faces){
+void floatTetWild::filter_outside(Mesh& mesh, const std::vector<Eigen::Matrix<double, 3, 1>> &input_vertices, const std::vector<Eigen::Matrix<int, 3, 1>> &input_faces){
     Eigen::MatrixXd C(mesh.get_t_num(), 3);
     C.setZero();
     int index = 0;
@@ -1915,8 +1915,8 @@ void floatTetWild::untangle(Mesh &mesh) {
 //    return;
     auto &tet_vertices = mesh.tet_vertices;
     auto &tets = mesh.tets;
-    static const Scalar zero_area = 1e2 * SCALAR_ZERO_2;
-//    static const Scalar zero_area = 1e-10;
+    static const double zero_area = 1e2 * SCALAR_ZERO_2;
+//    static const double zero_area = 1e-10;
     static const std::vector<std::array<int, 4>> face_pairs = {{{0, 1, 2, 3}},
                                                                {{0, 2, 1, 3}},
                                                                {{0, 3, 1, 2}}};
@@ -1998,13 +1998,13 @@ void floatTetWild::untangle(Mesh &mesh) {
                 cnt++;
             } else {
                 for (const auto &fp: face_pairs) {
-                    std::array<Vector3, 2> ns;
+                    std::array<Eigen::Matrix<double, 3, 1>, 2> ns;
                     auto &p1 = tet_vertices[tets[t_id][fp[2]]].pos;
                     auto &p2 = tet_vertices[tets[t_id][fp[3]]].pos;
-                    Vector3 v = (p2 - p1).normalized();
+                    Eigen::Matrix<double, 3, 1> v = (p2 - p1).normalized();
                     for (int j = 0; j < 2; j++) {
                         auto &p = tet_vertices[tets[t_id][fp[j]]].pos;
-                        Vector3 q = p1 + ((p - p1).dot(v)) * v;
+                        Eigen::Matrix<double, 3, 1> q = p1 + ((p - p1).dot(v)) * v;
                         ns[j] = p - q;
                     }
                     if (ns[0].dot(ns[1]) > 0)
@@ -2137,16 +2137,16 @@ void floatTetWild::smooth_open_boundary_aux(Mesh& mesh, const AABBWrapper& tree)
             }
             vector_unique(n_v_ids);
 
-            Vector3 c(0, 0, 0);
+            Eigen::Matrix<double, 3, 1> c(0, 0, 0);
             for (int n_v_id: n_v_ids) {
                 c += tet_vertices[n_v_id].pos;
             }
             c /= n_v_ids.size();
 
             double dis = (c - tet_vertices[v_id].pos).norm();
-            Vector3 v = (c - tet_vertices[v_id].pos).normalized();
+            Eigen::Matrix<double, 3, 1> v = (c - tet_vertices[v_id].pos).normalized();
             static const int N = 7;
-            Vector3 p;
+            Eigen::Matrix<double, 3, 1> p;
             for (int n = 0; n < N; n++) {
                 p = tet_vertices[v_id].pos + dis / pow(2, n) * v;
                 bool is_valid = true;
@@ -2373,7 +2373,7 @@ void floatTetWild::manifold_edges(Mesh& mesh) {
         cout<<e[0]<<" "<<e[1]<<endl;
         for (int t_id: n_t_ids) {
             cout<<t_id<<": ";
-            tets[t_id].print();
+            cout << tets[t_id].to_string() << endl;
         }
 //        pausee();
 

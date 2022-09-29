@@ -318,7 +318,7 @@ void floatTetWild::CutMesh::expand(std::vector<int>& cut_t_ids) {
 
 void floatTetWild::CutMesh::expand_new(std::vector<int> &cut_t_ids) {
     const int t = get_t(p_vs[0], p_vs[1], p_vs[2]);
-    const std::array<Vector2, 3> tri_2d = {{to_2d(p_vs[0], t), to_2d(p_vs[1], t), to_2d(p_vs[2], t)}};
+    const std::array<Eigen::Matrix<double, 2, 1>, 3> tri_2d = {{to_2d(p_vs[0], t), to_2d(p_vs[1], t), to_2d(p_vs[2], t)}};
 
     std::vector<bool> is_in_cutmesh(mesh.tets.size(), false);
     for (int t_id:cut_t_ids)
@@ -384,10 +384,10 @@ void floatTetWild::CutMesh::expand_new(std::vector<int> &cut_t_ids) {
                         continue;
 
                     bool is_overlapped = false;
-                    std::array<Vector2, 4> tet_2d;
+                    std::array<Eigen::Matrix<double, 2, 1>, 4> tet_2d;
                     for (int j = 0; j < 4; j++) {
-                        Scalar dist = get_to_plane_dist(mesh.tet_vertices[mesh.tets[gt_id][j]].pos);
-                        Vector3 proj_p = mesh.tet_vertices[mesh.tets[gt_id][j]].pos - dist * p_n;
+                        double dist = get_to_plane_dist(mesh.tet_vertices[mesh.tets[gt_id][j]].pos);
+                        Eigen::Matrix<double, 3, 1> proj_p = mesh.tet_vertices[mesh.tets[gt_id][j]].pos - dist * p_n;
                         tet_2d[j] = to_2d(proj_p, t);
                     }
                     for(int j=0;j<4;j++) {
@@ -512,12 +512,12 @@ int floatTetWild::CutMesh::project_to_plane(int input_vertices_size) {
             continue;
         if (v_ids[i] < input_vertices_size)
             continue;
-        Scalar dist = get_to_plane_dist(mesh.tet_vertices[v_ids[i]].pos);
+        double dist = get_to_plane_dist(mesh.tet_vertices[v_ids[i]].pos);
 //        if (std::abs(dist) <= 1e-9) {
 //            cnt++;
 //            continue;
 //        }
-        Vector3 proj_p = mesh.tet_vertices[v_ids[i]].pos - p_n * dist;
+        Eigen::Matrix<double, 3, 1> proj_p = mesh.tet_vertices[v_ids[i]].pos - p_n * dist;
 //        cout << get_to_plane_dist(proj_p) << endl;
         bool is_snappable = true;
         for (int t_id: mesh.tet_vertices[v_ids[i]].conn_tets) {
@@ -566,7 +566,7 @@ void floatTetWild::CutMesh::revert_totally_snapped_tets(int a, int b) {
     }
 }
 
-bool floatTetWild::CutMesh::get_intersecting_edges_and_points(std::vector<Vector3> &points,
+bool floatTetWild::CutMesh::get_intersecting_edges_and_points(std::vector<Eigen::Matrix<double, 3, 1>> &points,
                                                               std::map<std::array<int, 2>, int>& map_edge_to_intersecting_point,
                                                               std::vector<int>& subdivide_t_ids) {
     std::vector<std::array<int, 2>> edges;
@@ -601,8 +601,8 @@ bool floatTetWild::CutMesh::get_intersecting_edges_and_points(std::vector<Vector
 //        timer.start();
         int v1_id = v_ids[e[0]];
         int v2_id = v_ids[e[1]];
-        Vector3 p;
-        Scalar _;
+        Eigen::Matrix<double, 3, 1> p;
+        double _;
         bool is_result = seg_plane_intersection(mesh.tet_vertices[v1_id].pos, mesh.tet_vertices[v2_id].pos,
                                                 p_vs[0], p_n, p, _);
 //        time_get_intersecting_edges_and_points2 += timer.getElapsedTime();
@@ -617,8 +617,8 @@ bool floatTetWild::CutMesh::get_intersecting_edges_and_points(std::vector<Vector
             return false;
         }
 
-//        Scalar dist1 = (p-mesh.tet_vertices[v1_id].pos).squaredNorm();
-//        Scalar dist2 = (p-mesh.tet_vertices[v2_id].pos).squaredNorm();
+//        double dist1 = (p-mesh.tet_vertices[v1_id].pos).squaredNorm();
+//        double dist2 = (p-mesh.tet_vertices[v2_id].pos).squaredNorm();
 //        if(dist1 <= SCALAR_ZERO_2){
 //            cout<<"snapped e[0]"<<endl;
 //            is_snapped[e[0]] = true;
@@ -689,7 +689,7 @@ bool floatTetWild::CutMesh::check() {
         int gv_id = m.first;
         int lv_id = m.second;
 
-        Scalar dist = get_to_plane_dist(mesh.tet_vertices[gv_id].pos);
+        double dist = get_to_plane_dist(mesh.tet_vertices[gv_id].pos);
         if (std::fabs(dist) < mesh.params.eps_coplanar && to_plane_dists[lv_id] != 0 && !is_snapped[lv_id]) {
             cout << "wrong vertex in cut mesh" << endl;
             cout << dist << endl;

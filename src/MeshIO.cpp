@@ -31,7 +31,7 @@ namespace {
 void extract_volume_mesh(const Mesh&                     mesh,
                          const std::function<bool(int)>& skip_tet,
                          const std::function<bool(int)>& skip_vertex,
-                         MatrixXs&                       V,
+                         Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>&                       V,
                          Eigen::MatrixXi&                T)
 {
     const auto& points = mesh.tet_vertices;
@@ -71,7 +71,7 @@ void extract_surface_mesh(const Mesh&                               mesh,
                           Eigen::Matrix<Scalar, Eigen::Dynamic, 3>& VS,
                           Eigen::Matrix<int, Eigen::Dynamic, 3>&    FS)
 {
-    MatrixXs        VT;
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>        VT;
     Eigen::MatrixXi TT;
     extract_volume_mesh(mesh, skip_tet, skip_vertex, VT, TT);
 
@@ -217,8 +217,8 @@ void write_mesh_aux(const std::string&              path,
 }  // namespace
 
 bool MeshIO::load_mesh(const std::string&     path,
-                       std::vector<Vector3>&  points,
-                       std::vector<Vector3i>& faces,
+                       std::vector<Eigen::Matrix<double, 3, 1>>&  points,
+                       std::vector<Eigen::Matrix<int, 3, 1>>& faces,
                        GEO::Mesh&             input,
                        std::vector<int>&      flags)
 {
@@ -277,8 +277,8 @@ bool MeshIO::load_mesh(const std::string&     path,
 }
 
 bool MeshIO::load_mesh(const std::string&     path,
-                           std::vector<Vector3>&  points,
-                           std::vector<Vector3i>& faces,
+                           std::vector<Eigen::Matrix<double, 3, 1>>&  points,
+                           std::vector<Eigen::Matrix<int, 3, 1>>& faces,
                            GEO::Mesh&             input,
                            std::vector<int>&      flags,
                            std::vector<double>& epsr_flags)
@@ -352,8 +352,8 @@ bool MeshIO::load_mesh(const std::string&     path,
         return ok;
     }
 
-void MeshIO::load_mesh(std::vector<Vector3>&  points,
-                       std::vector<Vector3i>& faces,
+void MeshIO::load_mesh(std::vector<Eigen::Matrix<double, 3, 1>>&  points,
+                       std::vector<Eigen::Matrix<int, 3, 1>>& faces,
                        GEO::Mesh&             input,
                        std::vector<int>&      flags)
 {
@@ -412,8 +412,8 @@ void MeshIO::load_mesh(std::vector<Vector3>&  points,
         faces[i] << input.facets.vertex(i, 0), input.facets.vertex(i, 1), input.facets.vertex(i, 2);
 }
 
-void MeshIO::load_mesh(std::vector<Vector3>&  points,
-                       std::vector<Vector3i>& faces,
+void MeshIO::load_mesh(std::vector<Eigen::Matrix<double, 3, 1>>&  points,
+                       std::vector<Eigen::Matrix<int, 3, 1>>& faces,
                        GEO::Mesh&             input,
                        std::vector<int>&      flags,
                        std::vector<double>& epsr_flags) {
@@ -566,7 +566,7 @@ void MeshIO::write_surface_mesh(const std::string& path, const Mesh& mesh, const
 }
 
 void MeshIO::extract_volume_mesh(const Mesh&      mesh,
-                                 MatrixXs&        V,
+                                 Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>&        V,
                                  Eigen::MatrixXi& T,
                                  bool             only_interior)
 {

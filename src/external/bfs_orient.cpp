@@ -64,11 +64,11 @@ void floatTetWild::bfs_orient(const Eigen::Matrix<int, Eigen::Dynamic, 3> &F, Ei
                     // loop over edges of f
                     for (int efi = 0; efi < 3; efi++) {
                         // efi'th edge of face f
-                        Eigen::Vector2i ef(FF(f, ES[efi][0]), FF(f, ES[efi][1]));
+                        Eigen::Eigen::Matrix<int, 2, 1> ef(FF(f, ES[efi][0]), FF(f, ES[efi][1]));
                         // loop over edges of n
                         for (int eni = 0; eni < 3; eni++) {
                             // eni'th edge of face n
-                            Eigen::Vector2i en(FF(n, ES[eni][0]), FF(n, ES[eni][1]));
+                            Eigen::Eigen::Matrix<int, 2, 1> en(FF(n, ES[eni][0]), FF(n, ES[eni][1]));
                             // Match (half-edges go same direction)
                             if (ef(0) == en(0) && ef(1) == en(1)) {
                                 // flip face n

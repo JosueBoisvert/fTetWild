@@ -45,7 +45,7 @@ namespace floatTetWild {
         Eigen::VectorXd V_sizing_field;
         Eigen::VectorXi T_sizing_field;
         Eigen::VectorXd values_sizing_field;
-        std::function<double(const Vector3&)> get_sizing_field_value;//get sizing field value for an point
+        std::function<double(const Eigen::Matrix<double, 3, 1>&)> get_sizing_field_value;//get sizing field value for an point
 
 #ifdef NEW_ENVELOPE
         std::vector<double> input_epsr_tags;//same length as the list of input faces
@@ -53,17 +53,17 @@ namespace floatTetWild {
 
         // it decides the scale of the box, presents the deviation of the box from the model
         //( in % of  max((xmax-xmin), (ymax-ymin), (zmax-zmin)) of the input points)
-        Scalar box_scale = 1 / 15.0;
+        double box_scale = 1 / 15.0;
 
         // epsilon presents the tolerence permited (in % of the box diagonal)
-        Scalar eps_rel = 1e-3;
+        double eps_rel = 1e-3;
 
         // initial target edge length at every vertex(in % of the box diagonal)
-        Scalar ideal_edge_length_rel = 1 / 20.0;
-        Scalar min_edge_len_rel = -1;
+        double ideal_edge_length_rel = 1 / 20.0;
+        double min_edge_len_rel = -1;
 
         int max_its = 80;
-        Scalar stop_energy = 10;
+        double stop_energy = 10;
 
 #ifdef NEW_ENVELOPE
         int stage = 1;
@@ -75,28 +75,28 @@ namespace floatTetWild {
 
         int stop_p = -1;
 
-        Vector3 bbox_min;
-        Vector3 bbox_max;
-        Scalar bbox_diag_length;
-        Scalar ideal_edge_length;
-        Scalar ideal_edge_length_2;
-        Scalar eps_input;
-        Scalar eps;
-        Scalar eps_delta;
-        Scalar eps_2;
-        Scalar dd;
-        Scalar min_edge_length;
+        Eigen::Matrix<double, 3, 1> bbox_min;
+        Eigen::Matrix<double, 3, 1> bbox_max;
+        double bbox_diag_length;
+        double ideal_edge_length;
+        double ideal_edge_length_2;
+        double eps_input;
+        double eps;
+        double eps_delta;
+        double eps_2;
+        double dd;
+        double min_edge_length;
 
-        Scalar split_threshold;
-        Scalar collapse_threshold;
-        Scalar split_threshold_2;
-        Scalar collapse_threshold_2;
+        double split_threshold;
+        double collapse_threshold;
+        double split_threshold_2;
+        double collapse_threshold_2;
 
-        Scalar eps_coplanar;
-        Scalar eps_2_coplanar;
-        Scalar eps_simplification;
-        Scalar eps_2_simplification;
-        Scalar dd_simplification;
+        double eps_coplanar;
+        double eps_2_coplanar;
+        double eps_simplification;
+        double eps_2_simplification;
+        double dd_simplification;
 
         bool init(Scalar bbox_diag_l) {
             if (stage > 5)

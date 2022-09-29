@@ -9,7 +9,8 @@
 #ifndef FLOATTETWILD_EDGESPLITTING_H
 #define FLOATTETWILD_EDGESPLITTING_H
 
-#include <floattetwild/Mesh.hpp>
+//#include <floattetwild/Mesh.hpp>
+#include "ftetwild.hpp"
 #include <floattetwild/AABBWrapper.h>
 
 namespace floatTetWild {

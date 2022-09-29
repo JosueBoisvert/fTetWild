@@ -12,14 +12,14 @@ namespace floatTetWild {
     const int Predicates::ORI_NEGATIVE;
     const int Predicates::ORI_UNKNOWN;
 
-    int Predicates::orient_3d(const Vector3& p1, const Vector3& p2, const Vector3& p3, const Vector3& p4) {
+    int Predicates::orient_3d(const Eigen::Matrix<double, 3, 1>& p1, const Eigen::Matrix<double, 3, 1>& p2, const Eigen::Matrix<double, 3, 1>& p3, const Eigen::Matrix<double, 3, 1>& p4) {
 #if GEO_PREDICATES
         const int result = -GEO::PCK::orient_3d(p1.data(), p2.data(), p3.data(), p4.data());
 #else
-//		const Scalar result = orient3d(p1.data(), p2.data(), p3.data(), p4.data());
+//		const double result = orient3d(p1.data(), p2.data(), p3.data(), p4.data());
         igl::predicates::exactinit();
         auto res = igl::predicates::orient3d(p1, p2, p3, p4);
-        Scalar result;
+        double result;
         if(res == igl::predicates::Orientation::POSITIVE)
             result = 1;
         else if(res == igl::predicates::Orientation::NEGATIVE)
@@ -43,14 +43,14 @@ namespace floatTetWild {
             return ORI_ZERO;
     }
 
-    int Predicates::orient_3d_tolerance(const Vector3& p1, const Vector3& p2, const Vector3& p3, const Vector3& p) {
+    int Predicates::orient_3d_tolerance(const Eigen::Matrix<double, 3, 1>& p1, const Eigen::Matrix<double, 3, 1>& p2, const Eigen::Matrix<double, 3, 1>& p3, const Eigen::Matrix<double, 3, 1>& p) {
 #if GEO_PREDICATES
         const int result = -GEO::PCK::orient_3d(p1.data(), p2.data(), p3.data(), p.data());
 #else
-//		const Scalar result = orient3d(p1.data(), p2.data(), p3.data(), p.data());
+//		const double result = orient3d(p1.data(), p2.data(), p3.data(), p.data());
         igl::predicates::exactinit();
         auto res = igl::predicates::orient3d(p1, p2, p3, p);
-        Scalar result;
+        double result;
         if(res == igl::predicates::Orientation::POSITIVE)
             result = 1;
         else if(res == igl::predicates::Orientation::NEGATIVE)
@@ -62,8 +62,8 @@ namespace floatTetWild {
         if (result == 0)
             return ORI_ZERO;
 
-        Vector3 n = ((p2 - p3).cross(p1 - p3)).normalized();
-        Scalar d = std::abs(n.dot(p - p1));
+        Eigen::Matrix<double, 3, 1> n = ((p2 - p3).cross(p1 - p3)).normalized();
+        double d = std::abs(n.dot(p - p1));
         if (d <= SCALAR_ZERO)
             return Predicates::ORI_ZERO;
 
@@ -73,14 +73,14 @@ namespace floatTetWild {
             return ORI_NEGATIVE;
     }
 
-    Scalar Predicates::orient_3d_volume(const Vector3& p1, const Vector3& p2, const Vector3& p3, const Vector3& p4) {
+    double Predicates::orient_3d_volume(const Eigen::Matrix<double, 3, 1>& p1, const Eigen::Matrix<double, 3, 1>& p2, const Eigen::Matrix<double, 3, 1>& p3, const Eigen::Matrix<double, 3, 1>& p4) {
 #if GEO_PREDICATES
         const int ori = -GEO::PCK::orient_3d(p1.data(), p2.data(), p3.data(), p4.data());
 #else
-//		const Scalar result = orient3d(p1.data(), p2.data(), p3.data(), p4.data());
+//		const double result = orient3d(p1.data(), p2.data(), p3.data(), p4.data());
         igl::predicates::exactinit();
         auto res = igl::predicates::orient3d(p1, p2, p3, p4);
-        Scalar ori;
+        double ori;
         if(res == igl::predicates::Orientation::POSITIVE)
             ori = 1;
         else if(res == igl::predicates::Orientation::NEGATIVE)
@@ -94,14 +94,14 @@ namespace floatTetWild {
             return (p1 - p4).dot((p2 - p4).cross(p3 - p4)) / 6;
     }
 
-    int Predicates::orient_2d(const Vector2& p1, const Vector2& p2, const Vector2& p3) {
+    int Predicates::orient_2d(const Eigen::Matrix<double, 2, 1>& p1, const Eigen::Matrix<double, 2, 1>& p2, const Eigen::Matrix<double, 2, 1>& p3) {
 #if GEO_PREDICATES
         const int result = -GEO::PCK::orient_2d(p1.data(), p2.data(), p3.data());
 #else
-//		const Scalar result = orient2d(p1.data(), p2.data(), p3.data());
+//		const double result = orient2d(p1.data(), p2.data(), p3.data());
         igl::predicates::exactinit();
         auto res = igl::predicates::orient2d(p1, p2, p3);
-        Scalar result;
+        double result;
         if(res == igl::predicates::Orientation::POSITIVE)
             result = 1;
         else if(res == igl::predicates::Orientation::NEGATIVE)

@@ -41,7 +41,7 @@ void floatTetWild::vertex_smoothing(Mesh& mesh, const AABBWrapper& tree){
         counter++;
 
         ////newton
-        Vector3 p;
+        Eigen::Matrix<double, 3, 1> p;
         if (!find_new_pos(mesh, v_id, p))
             return;
 
@@ -157,7 +157,7 @@ void floatTetWild::vertex_smoothing(Mesh& mesh, const AABBWrapper& tree){
     cout<<"success = "<<suc_counter<<"("<<counter<<")"<<endl;
 }
 
-bool floatTetWild::project_and_check(Mesh& mesh, int v_id, Vector3& p, const AABBWrapper& tree, bool is_sf, std::vector<Scalar>& new_qs) {
+bool floatTetWild::project_and_check(Mesh& mesh, int v_id, Eigen::Matrix<double, 3, 1>& p, const AABBWrapper& tree, bool is_sf, std::vector<Scalar>& new_qs) {
     //project to surface
     if(is_sf)
         tree.project_to_sf(p);
@@ -186,7 +186,7 @@ bool floatTetWild::project_and_check(Mesh& mesh, int v_id, Vector3& p, const AAB
         int j = t.find(v_id);
         if(is_inverted(mesh, t_id, j, p))
             return false;
-        Scalar new_q = get_quality(p, mesh.tet_vertices[t[(j + 1) % 4]].pos, mesh.tet_vertices[t[(j + 2) % 4]].pos,
+        double new_q = get_quality(p, mesh.tet_vertices[t[(j + 1) % 4]].pos, mesh.tet_vertices[t[(j + 2) % 4]].pos,
                                    mesh.tet_vertices[t[(j + 3) % 4]].pos);
         if (new_q > max_q)
             return false;
@@ -196,7 +196,7 @@ bool floatTetWild::project_and_check(Mesh& mesh, int v_id, Vector3& p, const AAB
     return true;
 }
 
-bool floatTetWild::find_new_pos(Mesh& mesh, const int v_id, Vector3& x) {
+bool floatTetWild::find_new_pos(Mesh& mesh, const int v_id, Eigen::Matrix<double, 3, 1>& x) {
     auto &tets = mesh.tets;
     auto &tet_vertices = mesh.tet_vertices;
 
@@ -224,14 +224,14 @@ bool floatTetWild::find_new_pos(Mesh& mesh, const int v_id, Vector3& x) {
     ////newton
     const int max_newton_it = 15;
     const int max_search_it = 10;
-    const Scalar f_delta = 1e-8;
-    const Scalar J_delta = 1e-8;
+    const double f_delta = 1e-8;
+    const double J_delta = 1e-8;
 
     x = tet_vertices[v_id].pos;
-    Vector3 J;
-    Matrix3 H;
+    Eigen::Matrix<double, 3, 1> J;
+    Eigen::Matrix<double, 3, 3> H;
 
-//    Scalar f_old, f_new;
+//    double f_old, f_new;
 //    int it;
     for (int newton_it = 0; newton_it < max_newton_it; newton_it++) {
         if (newton_it > 0) {
@@ -243,7 +243,7 @@ bool floatTetWild::find_new_pos(Mesh& mesh, const int v_id, Vector3& x) {
         }
 
         //f
-        Scalar f = 0;
+        double f = 0;
         for (auto &T:Ts) {
             f += AMIPS_energy(T);
         }
@@ -258,7 +258,7 @@ bool floatTetWild::find_new_pos(Mesh& mesh, const int v_id, Vector3& x) {
         //J
         J << 0, 0, 0;
         for (auto &T:Ts) {
-            Vector3 tmp_J;
+            Eigen::Matrix<double, 3, 1> tmp_J;
             AMIPS_jacobian(T, tmp_J);
             J += tmp_J;
         }
@@ -269,7 +269,7 @@ bool floatTetWild::find_new_pos(Mesh& mesh, const int v_id, Vector3& x) {
         //H
         H << 0, 0, 0, 0, 0, 0, 0, 0, 0;
         for (auto &T:Ts) {
-            Matrix3 tmp_H;
+            Eigen::Matrix<double, 3, 3> tmp_H;
             AMIPS_hessian(T, tmp_H);
             H += tmp_H;
         }
@@ -278,8 +278,8 @@ bool floatTetWild::find_new_pos(Mesh& mesh, const int v_id, Vector3& x) {
 
         //x
         bool found_step = false;
-        Scalar a = 1;
-        Vector3 x_next;
+        double a = 1;
+        Eigen::Matrix<double, 3, 1> x_next;
         for (int i = 0; i < max_search_it; i++) {
             x_next = H.colPivHouseholderQr().solve(H * x - a * J);
             //https://eigen.tuxfamily.org/dox/group__TutorialLinearAlgebra.html
@@ -308,7 +308,7 @@ bool floatTetWild::find_new_pos(Mesh& mesh, const int v_id, Vector3& x) {
             }
 
             //check energy
-            Scalar f_next = 0;
+            double f_next = 0;
             for (auto &T:Ts) {
                 f_next += AMIPS_energy(T);
             }

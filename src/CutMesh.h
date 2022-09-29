@@ -13,7 +13,8 @@
 #ifndef FLOATTETWILD_CUTMESH_H
 #define FLOATTETWILD_CUTMESH_H
 
-#include <floattetwild/Mesh.hpp>
+//#include <floattetwild/Mesh.hpp>
+#include "ftetwild.hpp"
 #include <floattetwild/AABBWrapper.h>
 
 namespace floatTetWild {
@@ -28,10 +29,10 @@ namespace floatTetWild {
         std::vector<bool> is_projected;
 
         Mesh &mesh;
-        const Vector3 &p_n;
-        const std::array<Vector3, 3> &p_vs;
+        const Eigen::Matrix<double, 3, 1> &p_n;
+        const std::array<Eigen::Matrix<double, 3, 1>, 3> &p_vs;
 
-        CutMesh(Mesh &_mesh, const Vector3 &_p_n, const std::array<Vector3, 3> &_p_vs) :
+        CutMesh(Mesh &_mesh, const Eigen::Matrix<double, 3, 1> &_p_n, const std::array<Eigen::Matrix<double, 3, 1>, 3> &_p_vs) :
                 mesh(_mesh), p_n(_p_n), p_vs(_p_vs) {}
 
         void construct(const std::vector<int> &cut_t_ids);
@@ -43,7 +44,7 @@ namespace floatTetWild {
 
         int project_to_plane(int input_vertices_size);
 
-        bool get_intersecting_edges_and_points(std::vector<Vector3> &points,
+        bool get_intersecting_edges_and_points(std::vector<Eigen::Matrix<double, 3, 1>> &points,
                                                std::map<std::array<int, 2>, int> &map_edge_to_intersecting_point,
                                                std::vector<int> &subdivide_t_ids);
 
@@ -57,7 +58,7 @@ namespace floatTetWild {
             return false;
         }
 
-        inline Scalar get_to_plane_dist(const Vector3 &p) {
+        inline double get_to_plane_dist(const Eigen::Matrix<double, 3, 1> &p) {
             return p_n.dot(p - p_vs[0]);
         }
 

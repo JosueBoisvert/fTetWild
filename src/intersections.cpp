@@ -11,7 +11,7 @@
 #include <floattetwild/Predicates.hpp>
 #include <floattetwild/LocalOperations.h>
 
-bool floatTetWild::seg_line_intersection_2d(const std::array<Vector2, 2> &seg, const std::array<Vector2, 2> &line, Scalar& t_seg){
+bool floatTetWild::seg_line_intersection_2d(const std::array<Eigen::Matrix<double, 2, 1>, 2> &seg, const std::array<Eigen::Matrix<double, 2, 1>, 2> &line, Scalar& t_seg){
     //assumptions:
     //segs are not degenerate
     //not coplanar
@@ -26,13 +26,13 @@ bool floatTetWild::seg_line_intersection_2d(const std::array<Vector2, 2> &seg, c
     const Scalar& x4 = line[1][0];
     const Scalar& y4 = line[1][1];
 
-    Scalar n1 = (y3 - y4) * (x1 - x3) + (x4 - x3) * (y1 - y3);
-    Scalar d1 = (x4 - x3) * (y1 - y2) - (x1 - x2) * (y4 - y3);
+    double n1 = (y3 - y4) * (x1 - x3) + (x4 - x3) * (y1 - y3);
+    double d1 = (x4 - x3) * (y1 - y2) - (x1 - x2) * (y4 - y3);
     if(d1 == 0)
         return false;
     t_seg = n1 / d1;
-//    Scalar n2 = (y1 - y2) * (x1 - x3) + (x2 - x1) * (y1 - y3);
-    Scalar d2 = (x4 - x3) * (y1 - y2) - (x1 - x2) * (y4 - y3);
+//    double n2 = (y1 - y2) * (x1 - x3) + (x2 - x1) * (y1 - y3);
+    double d2 = (x4 - x3) * (y1 - y2) - (x1 - x2) * (y4 - y3);
     if(d2 == 0) {
 //        cout<<"d2==0"<<endl;
         return false;
@@ -46,7 +46,7 @@ bool floatTetWild::seg_line_intersection_2d(const std::array<Vector2, 2> &seg, c
     return true;
 }
 
-bool floatTetWild::seg_seg_intersection_2d(const std::array<Vector2, 2> &seg1, const std::array<Vector2, 2> &seg2, Scalar& t2){
+bool floatTetWild::seg_seg_intersection_2d(const std::array<Eigen::Matrix<double, 2, 1>, 2> &seg1, const std::array<Eigen::Matrix<double, 2, 1>, 2> &seg2, Scalar& t2){
     //assumptions:
     //segs are not degenerate
     //not coplanar
@@ -61,13 +61,13 @@ bool floatTetWild::seg_seg_intersection_2d(const std::array<Vector2, 2> &seg1, c
     const Scalar& x4 = seg2[1][0];
     const Scalar& y4 = seg2[1][1];
 
-    Scalar n1 = (y3 - y4) * (x1 - x3) + (x4 - x3) * (y1 - y3);
-    Scalar d1 = (x4 - x3) * (y1 - y2) - (x1 - x2) * (y4 - y3);
+    double n1 = (y3 - y4) * (x1 - x3) + (x4 - x3) * (y1 - y3);
+    double d1 = (x4 - x3) * (y1 - y2) - (x1 - x2) * (y4 - y3);
     if(d1 == 0)
         return false;
-    Scalar t1 = n1 / d1;
-    Scalar n2 = (y1 - y2) * (x1 - x3) + (x2 - x1) * (y1 - y3);
-    Scalar d2 = (x4 - x3) * (y1 - y2) - (x1 - x2) * (y4 - y3);
+    double t1 = n1 / d1;
+    double n2 = (y1 - y2) * (x1 - x3) + (x2 - x1) * (y1 - y3);
+    double d2 = (x4 - x3) * (y1 - y2) - (x1 - x2) * (y4 - y3);
     if(d2 == 0)
         return false;
     t2 = n2 / d2;
@@ -78,18 +78,18 @@ bool floatTetWild::seg_seg_intersection_2d(const std::array<Vector2, 2> &seg1, c
     return true;
 }
 
-floatTetWild::Scalar floatTetWild::seg_seg_squared_dist_3d(const std::array<Vector3, 2> &s1, const std::array<Vector3, 2> &s2) {
-    Vector3 w0 = s1[0] - s2[0];
-    Vector3 u = (s1[1] - s1[0]).normalized();
-    Vector3 v = (s2[1] - s2[0]).normalized();
-    Scalar a = u.dot(u);
-    Scalar b = u.dot(v);
-    Scalar c = v.dot(v);
-    Scalar d = u.dot(w0);
-    Scalar e = v.dot(w0);
+floatTetWild::Scalar floatTetWild::seg_seg_squared_dist_3d(const std::array<Eigen::Matrix<double, 3, 1>, 2> &s1, const std::array<Eigen::Matrix<double, 3, 1>, 2> &s2) {
+    Eigen::Matrix<double, 3, 1> w0 = s1[0] - s2[0];
+    Eigen::Matrix<double, 3, 1> u = (s1[1] - s1[0]).normalized();
+    Eigen::Matrix<double, 3, 1> v = (s2[1] - s2[0]).normalized();
+    double a = u.dot(u);
+    double b = u.dot(v);
+    double c = v.dot(v);
+    double d = u.dot(w0);
+    double e = v.dot(w0);
 
-    Scalar dd = a * c - b * b;
-    Scalar t1, t2;
+    double dd = a * c - b * b;
+    double t1, t2;
     if (dd == 0) {
         t1 = 0;
         t2 = d / b;
@@ -101,32 +101,32 @@ floatTetWild::Scalar floatTetWild::seg_seg_squared_dist_3d(const std::array<Vect
     return (((1 - t1) * s1[0] + t1 * s1[1]) - ((1 - t2) * s2[0] + t2 * s2[1])).squaredNorm();
 }
 
-floatTetWild::Scalar floatTetWild::p_line_squared_dist_3d(const Vector3 &v, const Vector3 &a, const Vector3 &b) {
+floatTetWild::Scalar floatTetWild::p_line_squared_dist_3d(const Eigen::Matrix<double, 3, 1> &v, const Eigen::Matrix<double, 3, 1> &a, const Eigen::Matrix<double, 3, 1> &b) {
     return ((b - a).cross(a - v)).squaredNorm() / (b - a).squaredNorm();
 }
 
-floatTetWild::Scalar floatTetWild::p_seg_squared_dist_3d(const Vector3 &v, const Vector3 &a, const Vector3 &b){
-    Vector3 av = v-a;
-    Vector3 ab = b-a;
+floatTetWild::Scalar floatTetWild::p_seg_squared_dist_3d(const Eigen::Matrix<double, 3, 1> &v, const Eigen::Matrix<double, 3, 1> &a, const Eigen::Matrix<double, 3, 1> &b){
+    Eigen::Matrix<double, 3, 1> av = v-a;
+    Eigen::Matrix<double, 3, 1> ab = b-a;
     if(av.dot(ab)<0)
         return av.squaredNorm();
-    Vector3 bv = v-b;
+    Eigen::Matrix<double, 3, 1> bv = v-b;
     if(bv.dot(-ab)<0)
         return bv.squaredNorm();
 
     return (ab.cross(-av)).squaredNorm()/ab.squaredNorm();
 }
 
-bool floatTetWild::seg_plane_intersection(const Vector3& p1, const Vector3& p2, const Vector3& a, const Vector3& n,
-                                          Vector3& p, Scalar& d1) {
-    Vector3 u = p2 - p1;
-    Vector3 w = p1 - a;
+bool floatTetWild::seg_plane_intersection(const Eigen::Matrix<double, 3, 1>& p1, const Eigen::Matrix<double, 3, 1>& p2, const Eigen::Matrix<double, 3, 1>& a, const Eigen::Matrix<double, 3, 1>& n,
+                                          Eigen::Matrix<double, 3, 1>& p, Scalar& d1) {
+    Eigen::Matrix<double, 3, 1> u = p2 - p1;
+    Eigen::Matrix<double, 3, 1> w = p1 - a;
 
-    Scalar D = n.dot(u);
+    double D = n.dot(u);
     d1 = -n.dot(w);
 
 //    if (fabs(D) <= SCALAR_ZERO) {// segment is parallel to plane
-    Scalar t;
+    double t;
     if (fabs(D) == 0) {// segment is parallel to plane
         if (d1 == 0)// segment lies in plane
             t = INT_MAX;
@@ -147,7 +147,7 @@ bool floatTetWild::seg_plane_intersection(const Vector3& p1, const Vector3& p2, 
     return true;
 }
 
-int floatTetWild::is_tri_tri_cutted(const std::array<Vector3, 3> &f_tri, const std::array<Vector3, 3> &f_tet,
+int floatTetWild::is_tri_tri_cutted(const std::array<Eigen::Matrix<double, 3, 1>, 3> &f_tri, const std::array<Eigen::Matrix<double, 3, 1>, 3> &f_tet,
                                     const std::array<int, 3>& oris_tri) {
     int cnt_pos = 0;
     int cnt_neg = 0;
@@ -208,15 +208,15 @@ int floatTetWild::is_tri_tri_cutted(const std::array<Vector3, 3> &f_tri, const s
     if(cnt_pos1 == 0 || cnt_neg1 == 0)
         return CUT_EMPTY;
 
-    auto is_f1_cut_f2 = [](const std::array<Vector3, 3> &f1, const std::array<Vector3, 3> &f2,
+    auto is_f1_cut_f2 = [](const std::array<Eigen::Matrix<double, 3, 1>, 3> &f1, const std::array<Eigen::Matrix<double, 3, 1>, 3> &f2,
                            const std::array<int, 3>& oris){//check f2 plane
-        Vector3 n = ((f2[1] - f2[2]).cross(f2[0] - f2[2])).normalized();
+        Eigen::Matrix<double, 3, 1> n = ((f2[1] - f2[2]).cross(f2[0] - f2[2])).normalized();
         int t = get_t(f2[0], f2[1], f2[2]);
         for(int j=0;j<3;j++) {
             if (oris[j] == Predicates::ORI_NEGATIVE && oris[(j + 1) % 3] == Predicates::ORI_POSITIVE
                 || oris[(j + 1) % 3] == Predicates::ORI_NEGATIVE && oris[j] == Predicates::ORI_POSITIVE) {
-                Vector3 p;
-                Scalar _;
+                Eigen::Matrix<double, 3, 1> p;
+                double _;
                 if (seg_plane_intersection(f1[j], f1[(j + 1) % 3], n, f2[0], p, _)
                     && is_p_inside_tri_2d(to_2d(p, t), {{to_2d(f2[0], t), to_2d(f2[1], t), to_2d(f2[2], t)}}))
                     return true;
@@ -234,7 +234,7 @@ int floatTetWild::is_tri_tri_cutted(const std::array<Vector3, 3> &f_tri, const s
     return CUT_EMPTY;
 }
 
-bool floatTetWild::is_tri_tri_cutted_2d(const std::array<Vector2, 3>& vs_tet, const std::array<Vector2, 3>& vs_tri) {
+bool floatTetWild::is_tri_tri_cutted_2d(const std::array<Eigen::Matrix<double, 2, 1>, 3>& vs_tet, const std::array<Eigen::Matrix<double, 2, 1>, 3>& vs_tri) {
     std::array<int, 9> tri_tet;
     int cnt_pos0 = 0;
     int cnt_neg0 = 0;
@@ -306,10 +306,10 @@ bool floatTetWild::is_tri_tri_cutted_2d(const std::array<Vector2, 3>& vs_tet, co
     return false;
 }
 
-bool floatTetWild::is_seg_tri_cutted_2d(const std::array<Vector2, 2> &seg, const std::array<Vector2, 3> &tri) {
-    std::vector<Vector2> ps;
+bool floatTetWild::is_seg_tri_cutted_2d(const std::array<Eigen::Matrix<double, 2, 1>, 2> &seg, const std::array<Eigen::Matrix<double, 2, 1>, 3> &tri) {
+    std::vector<Eigen::Matrix<double, 2, 1>> ps;
     for(int i=0;i<3;i++){
-        Scalar t2;
+        double t2;
         if(seg_seg_intersection_2d(seg, {{tri[i], tri[(i+1)%3]}}, t2)){
             ps.push_back(t2 * tri[i] + (1-t2) * tri[(i+1)%3]);//todo double check
         }
@@ -317,7 +317,7 @@ bool floatTetWild::is_seg_tri_cutted_2d(const std::array<Vector2, 2> &seg, const
     if(ps.size()<2)
         return false;
     for(int i=0;i<ps.size();i++) {
-        Vector2 v = ps[i] - ps[(i + 1) % ps.size()];
+        Eigen::Matrix<double, 2, 1> v = ps[i] - ps[(i + 1) % ps.size()];
         if (v[0] < SCALAR_ZERO && v[1] < SCALAR_ZERO) {
             ps.erase(ps.begin() + i);
             i--;
@@ -368,7 +368,7 @@ bool floatTetWild::is_seg_tri_cutted_2d(const std::array<Vector2, 2> &seg, const
     return false;
 }
 
-bool floatTetWild::is_p_inside_tri_2d(const Vector2& p, const std::array<Vector2, 3> &tri) {
+bool floatTetWild::is_p_inside_tri_2d(const Eigen::Matrix<double, 2, 1>& p, const std::array<Eigen::Matrix<double, 2, 1>, 3> &tri) {
     int cnt_pos = 0;
     int cnt_neg = 0;
 
@@ -385,15 +385,15 @@ bool floatTetWild::is_p_inside_tri_2d(const Vector2& p, const std::array<Vector2
     return false;
 }
 
-int floatTetWild::get_t(const Vector3 &p0, const Vector3 &p1, const Vector3 &p2) {
-    static const std::array<Vector3, 3> ns = {{Vector3(1, 0, 0), Vector3(0, 1, 0), Vector3(0, 0, 1)}};
+int floatTetWild::get_t(const Eigen::Matrix<double, 3, 1> &p0, const Eigen::Matrix<double, 3, 1> &p1, const Eigen::Matrix<double, 3, 1> &p2) {
+    static const std::array<Eigen::Matrix<double, 3, 1>, 3> ns = {{Eigen::Matrix<double, 3, 1>(1, 0, 0), Eigen::Matrix<double, 3, 1>(0, 1, 0), Eigen::Matrix<double, 3, 1>(0, 0, 1)}};
 
-    Vector3 n = (p1 - p2).cross(p0 - p2);
-    Scalar max = 0;
+    Eigen::Matrix<double, 3, 1> n = (p1 - p2).cross(p0 - p2);
+    double max = 0;
     int t = 0;
     for (int i = 0; i < 3; i++) {
-//        Scalar cos_a = abs(n.dot(ns[i]));
-        Scalar cos_a = abs(n[i]);
+//        double cos_a = abs(n.dot(ns[i]));
+        double cos_a = abs(n[i]);
         if (cos_a > max) {
             max = cos_a;
             t = i;
@@ -411,14 +411,14 @@ int floatTetWild::get_t(const Vector3 &p0, const Vector3 &p1, const Vector3 &p2)
 //    return t;
 }
 
-floatTetWild::Vector2 floatTetWild::to_2d(const Vector3 &p, int t) {
-    return Vector2(p[(t + 1) % 3], p[(t + 2) % 3]);
+floatTetWild::Eigen::Matrix<double, 2, 1> floatTetWild::to_2d(const Eigen::Matrix<double, 3, 1> &p, int t) {
+    return Eigen::Matrix<double, 2, 1>(p[(t + 1) % 3], p[(t + 2) % 3]);
 }
 
-floatTetWild::Vector2 floatTetWild::to_2d(const Vector3 &p, const Vector3& n, const Vector3& pp, int t) {
-    Scalar dist = n.dot(p - pp);
-    Vector3 proj_p = p - dist * n;
-    return Vector2(proj_p[(t + 1) % 3], proj_p[(t + 2) % 3]);
+floatTetWild::Eigen::Matrix<double, 2, 1> floatTetWild::to_2d(const Eigen::Matrix<double, 3, 1> &p, const Eigen::Matrix<double, 3, 1>& n, const Eigen::Matrix<double, 3, 1>& pp, int t) {
+    double dist = n.dot(p - pp);
+    Eigen::Matrix<double, 3, 1> proj_p = p - dist * n;
+    return Eigen::Matrix<double, 2, 1>(proj_p[(t + 1) % 3], proj_p[(t + 2) % 3]);
 }
 
 bool floatTetWild::is_crossing(int s1, int s2) {
@@ -435,8 +435,8 @@ extern "C++" int tri_tri_intersection_test_3d(floatTetWild::Scalar p1[3], floatT
                                              int * coplanar,
                                              floatTetWild::Scalar source[3], floatTetWild::Scalar target[3]);
 
-int floatTetWild::is_tri_tri_cutted(const Vector3& p1, const Vector3& p2, const Vector3& p3,
-                                    const Vector3& q1, const Vector3& q2, const Vector3& q3) {
+int floatTetWild::is_tri_tri_cutted(const Eigen::Matrix<double, 3, 1>& p1, const Eigen::Matrix<double, 3, 1>& p2, const Eigen::Matrix<double, 3, 1>& p3,
+                                    const Eigen::Matrix<double, 3, 1>& q1, const Eigen::Matrix<double, 3, 1>& q2, const Eigen::Matrix<double, 3, 1>& q3) {
     std::array<Scalar, 3> p_1 = {{0, 0, 0}}, q_1 = {{0, 0, 0}}, r_1 = {{0, 0, 0}};
     std::array<Scalar, 3> p_2 = {{0, 0, 0}}, q_2 = {{0, 0, 0}}, r_2 = {{0, 0, 0}};
     int coplanar = 0;
@@ -461,14 +461,14 @@ int floatTetWild::is_tri_tri_cutted(const Vector3& p1, const Vector3& p2, const 
     if (s[0] == t[0] && s[1] == t[1] && s[2] == t[2])
         return CUT_EMPTY;
 
-    auto is_collinear = [&](const Vector3 &st, const Vector3 &q12) {
-        Vector3 cross = st.cross(q12);
+    auto is_collinear = [&](const Eigen::Matrix<double, 3, 1> &st, const Eigen::Matrix<double, 3, 1> &q12) {
+        Eigen::Matrix<double, 3, 1> cross = st.cross(q12);
         if (cross[0] <= SCALAR_ZERO && cross[1] <= SCALAR_ZERO && cross[2] <= SCALAR_ZERO)
             return true;
         return false;
     };
 
-    Vector3 st(t[0] - s[0], t[1] - s[1], t[2] - s[2]);
+    Eigen::Matrix<double, 3, 1> st(t[0] - s[0], t[1] - s[1], t[2] - s[2]);
     if (is_collinear(st, q1 - q2))
         return CUT_EDGE_0;
     if (is_collinear(st, q2 - q3))
@@ -479,8 +479,8 @@ int floatTetWild::is_tri_tri_cutted(const Vector3& p1, const Vector3& p2, const 
     return CUT_FACE;
 }
 
-int floatTetWild::is_tri_tri_cutted_hint(const Vector3& p1, const Vector3& p2, const Vector3& p3,
-                                         const Vector3& q1, const Vector3& q2, const Vector3& q3, int hint, bool is_debug) {
+int floatTetWild::is_tri_tri_cutted_hint(const Eigen::Matrix<double, 3, 1>& p1, const Eigen::Matrix<double, 3, 1>& p2, const Eigen::Matrix<double, 3, 1>& p3,
+                                         const Eigen::Matrix<double, 3, 1>& q1, const Eigen::Matrix<double, 3, 1>& q2, const Eigen::Matrix<double, 3, 1>& q3, int hint, bool is_debug) {
     std::array<Scalar, 3> p_1 = {{0, 0, 0}}, q_1 = {{1, 0, 0}}, r_1 = {{0, 1, 0}};
     std::array<Scalar, 3> p_2 = {{0, 0, 0}}, q_2 = {{-1, -1, 0}}, r_2 = {{1, 1, 0}};
     int coplanar = 0;
@@ -500,8 +500,8 @@ int floatTetWild::is_tri_tri_cutted_hint(const Vector3& p1, const Vector3& p2, c
 //            return CUT_COPLANAR;
 
         //todo: to2d
-//        auto to_2d = [](const Vector3& v, int t) {
-//            return Vector2(v[(t + 1) % 3], v[(t + 2) % 3]);
+//        auto to_2d = [](const Eigen::Matrix<double, 3, 1>& v, int t) {
+//            return Eigen::Matrix<double, 2, 1>(v[(t + 1) % 3], v[(t + 2) % 3]);
 //        };
 //        int t = 2;
 //        for (int k = 0; k < 3; k++) {
@@ -589,15 +589,15 @@ int floatTetWild::is_tri_tri_cutted_hint(const Vector3& p1, const Vector3& p2, c
     return CUT_FACE;
 }
 
-void floatTetWild::get_bbox_face(const Vector3& p0, const Vector3& p1, const Vector3& p2,
-        Vector3& min, Vector3& max, Scalar eps) {
+void floatTetWild::get_bbox_face(const Eigen::Matrix<double, 3, 1>& p0, const Eigen::Matrix<double, 3, 1>& p1, const Eigen::Matrix<double, 3, 1>& p2,
+        Eigen::Matrix<double, 3, 1>& min, Eigen::Matrix<double, 3, 1>& max, double eps) {
     min = p0;
     max = p0;
     for (int j = 0; j < 3; j++) {
-        Scalar tmp_min = std::min(p1[j], p2[j]);
+        double tmp_min = std::min(p1[j], p2[j]);
         if (tmp_min < min[j])
             min[j] = tmp_min;
-        Scalar tmp_max = std::max(p1[j], p2[j]);
+        double tmp_max = std::max(p1[j], p2[j]);
         if (tmp_max > max[j])
             max[j] = tmp_max;
     }
@@ -610,8 +610,8 @@ void floatTetWild::get_bbox_face(const Vector3& p0, const Vector3& p1, const Vec
     }
 }
 
-void floatTetWild::get_bbox_tet(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Vector3& p3,
-        Vector3& min, Vector3& max, Scalar eps) {
+void floatTetWild::get_bbox_tet(const Eigen::Matrix<double, 3, 1>& p0, const Eigen::Matrix<double, 3, 1>& p1, const Eigen::Matrix<double, 3, 1>& p2, const Eigen::Matrix<double, 3, 1>& p3,
+        Eigen::Matrix<double, 3, 1>& min, Eigen::Matrix<double, 3, 1>& max, double eps) {
     min = p0;
     max = p0;
     for (int j = 0; j < 3; j++) {
@@ -638,7 +638,7 @@ void floatTetWild::get_bbox_tet(const Vector3& p0, const Vector3& p1, const Vect
     }
 }
 
-bool floatTetWild::is_bbox_intersected(const Vector3& min1, const Vector3& max1, const Vector3& min2, const Vector3& max2) {
+bool floatTetWild::is_bbox_intersected(const Eigen::Matrix<double, 3, 1>& min1, const Eigen::Matrix<double, 3, 1>& max1, const Eigen::Matrix<double, 3, 1>& min2, const Eigen::Matrix<double, 3, 1>& max2) {
     for (int j = 0; j < 3; j++) {
         if (min1[j] > max2[j])
             return false;
@@ -648,8 +648,8 @@ bool floatTetWild::is_bbox_intersected(const Vector3& min1, const Vector3& max1,
     return true;
 }
 
-bool floatTetWild::is_tri_inside_tet(const std::array<Vector3, 3>& ps,
-        const Vector3& p0t, const Vector3& p1t, const Vector3& p2t, const Vector3& p3t) {
+bool floatTetWild::is_tri_inside_tet(const std::array<Eigen::Matrix<double, 3, 1>, 3>& ps,
+        const Eigen::Matrix<double, 3, 1>& p0t, const Eigen::Matrix<double, 3, 1>& p1t, const Eigen::Matrix<double, 3, 1>& p2t, const Eigen::Matrix<double, 3, 1>& p3t) {
     int cnt_pos = 0;
     int cnt_neg = 0;
 
@@ -685,7 +685,7 @@ bool floatTetWild::is_tri_inside_tet(const std::array<Vector3, 3>& ps,
     return false;
 }
 
-bool floatTetWild::is_point_inside_tet(const Vector3& p, const Vector3& p0t, const Vector3& p1t, const Vector3& p2t, const Vector3& p3t) {///inside or on
+bool floatTetWild::is_point_inside_tet(const Eigen::Matrix<double, 3, 1>& p, const Eigen::Matrix<double, 3, 1>& p0t, const Eigen::Matrix<double, 3, 1>& p1t, const Eigen::Matrix<double, 3, 1>& p2t, const Eigen::Matrix<double, 3, 1>& p3t) {///inside or on
     int cnt_pos = 0;
     int cnt_neg = 0;
 

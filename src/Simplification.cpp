@@ -24,7 +24,7 @@
 #include <tbb/concurrent_unordered_set.h>
 #endif
 
-void floatTetWild::simplify(std::vector<Vector3>& input_vertices, std::vector<Vector3i>& input_faces, std::vector<int>& input_tags,
+void floatTetWild::simplify(std::vector<Eigen::Matrix<double, 3, 1>>& input_vertices, std::vector<Eigen::Matrix<int, 3, 1>>& input_faces, std::vector<int>& input_tags,
         const AABBWrapper& tree, const Parameters& params, bool skip_simplify) {
 
     remove_duplicates(input_vertices, input_faces, input_tags, params);
@@ -59,7 +59,7 @@ void floatTetWild::simplify(std::vector<Vector3>& input_vertices, std::vector<Ve
         cnt++;
     }
 
-    std::vector<Vector3> new_input_vertices(cnt);
+    std::vector<Eigen::Matrix<double, 3, 1>> new_input_vertices(cnt);
     cnt = 0;
     for (int i = 0; i < input_vertices.size(); i++) {
         if (v_is_removed[i] || conn_fs[i].empty())
@@ -78,7 +78,7 @@ void floatTetWild::simplify(std::vector<Vector3>& input_vertices, std::vector<Ve
         cnt++;
     }
 
-    std::vector<Vector3i> new_input_faces(cnt);
+    std::vector<Eigen::Matrix<int, 3, 1>> new_input_faces(cnt);
     std::vector<int> new_input_tags(cnt);
     cnt = 0;
     for (int i = 0; i < input_faces.size(); i++) {
@@ -117,7 +117,7 @@ void floatTetWild::simplify(std::vector<Vector3>& input_vertices, std::vector<Ve
 //    ////////////////////////
 //    //check
 //    auto tmp = input_vertices;
-//    std::sort(tmp.begin(), tmp.end(), [](const Vector3& a, const Vector3& b){
+//    std::sort(tmp.begin(), tmp.end(), [](const Eigen::Matrix<double, 3, 1>& a, const Eigen::Matrix<double, 3, 1>& b){
 //       return std::tuple<Scalar, Scalar, Scalar>(a[0], a[1], a[2]) < std::tuple<Scalar, Scalar, Scalar>(b[0], b[1], b[2]);
 //    });
 //    for(int i=0;i<tmp.size()-1;i++){
@@ -127,7 +127,7 @@ void floatTetWild::simplify(std::vector<Vector3>& input_vertices, std::vector<Ve
 //    }
 }
 
-bool floatTetWild::remove_duplicates(std::vector<Vector3>& input_vertices, std::vector<Vector3i>& input_faces, std::vector<int>& input_tags, const Parameters& params) {
+bool floatTetWild::remove_duplicates(std::vector<Eigen::Matrix<double, 3, 1>>& input_vertices, std::vector<Eigen::Matrix<int, 3, 1>>& input_faces, std::vector<int>& input_tags, const Parameters& params) {
 //    std::vector<size_t> indices(input_vertices.size());
 //    for(size_t i=0;i<input_vertices.size();i++)
 //        indices[i] = i;
@@ -141,7 +141,7 @@ bool floatTetWild::remove_duplicates(std::vector<Vector3>& input_vertices, std::
 //               == std::make_tuple(input_vertices[i2][0], input_vertices[i2][1], input_vertices[i2][2]);
 //    }), indices.end());
 
-    MatrixXs V_tmp(input_vertices.size(), 3), V_in;
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> V_tmp(input_vertices.size(), 3), V_in;
     Eigen::MatrixXi F_tmp(input_faces.size(), 3), F_in;
     for (int i = 0; i < input_vertices.size(); i++)
         V_tmp.row(i) = input_vertices[i];
@@ -195,9 +195,9 @@ bool floatTetWild::remove_duplicates(std::vector<Vector3>& input_vertices, std::
         if (i > 0 && (F_in(i, 0) == F_in(i - 1, 0) && F_in(i, 1) == F_in(i - 1, 2) && F_in(i, 2) == F_in(i - 1, 1)))
             continue;
         //check area
-        Vector3 u = V_in.row(F_in(i, 1)) - V_in.row(F_in(i, 0));
-        Vector3 v = V_in.row(F_in(i, 2)) - V_in.row(F_in(i, 0));
-        Vector3 area = u.cross(v);
+        Eigen::Matrix<double, 3, 1> u = V_in.row(F_in(i, 1)) - V_in.row(F_in(i, 0));
+        Eigen::Matrix<double, 3, 1> v = V_in.row(F_in(i, 2)) - V_in.row(F_in(i, 0));
+        Eigen::Matrix<double, 3, 1> area = u.cross(v);
         if (area.norm() / 2 <= SCALAR_ZERO * params.bbox_diag_length)
             continue;
         input_faces.push_back(F_in.row(i));
@@ -207,7 +207,7 @@ bool floatTetWild::remove_duplicates(std::vector<Vector3>& input_vertices, std::
     return true;
 }
 
-void floatTetWild::collapsing(std::vector<Vector3>& input_vertices, std::vector<Vector3i>& input_faces,
+void floatTetWild::collapsing(std::vector<Eigen::Matrix<double, 3, 1>>& input_vertices, std::vector<Eigen::Matrix<int, 3, 1>>& input_faces,
         const AABBWrapper& tree, const Parameters& params,
         std::vector<bool>& v_is_removed, std::vector<bool>& f_is_removed, std::vector<std::unordered_set<int>>& conn_fs){
 
@@ -264,7 +264,7 @@ void floatTetWild::collapsing(std::vector<Vector3>& input_vertices, std::vector<
 
     std::priority_queue<ElementInQueue, std::vector<ElementInQueue>, cmp_s> sm_queue;
     for (auto& e: edges) {
-        Scalar weight = (input_vertices[e[0]] - input_vertices[e[1]]).squaredNorm();
+        double weight = (input_vertices[e[0]] - input_vertices[e[1]]).squaredNorm();
         sm_queue.push(ElementInQueue(e, weight));
         sm_queue.push(ElementInQueue(std::array<int, 2>({{e[1], e[0]}}), weight));
     }
@@ -313,7 +313,7 @@ void floatTetWild::collapsing(std::vector<Vector3>& input_vertices, std::vector<
         vector_unique(new_f_ids);
 
         //compute new point
-        Vector3 p = (input_vertices[v1_id] + input_vertices[v2_id]) / 2;
+        Eigen::Matrix<double, 3, 1> p = (input_vertices[v1_id] + input_vertices[v2_id]) / 2;
         tree.project_to_sf(p);
         // GEO::vec3 geo_p(p[0], p[1], p[2]);
         // GEO::vec3 nearest_p;
@@ -325,11 +325,11 @@ void floatTetWild::collapsing(std::vector<Vector3>& input_vertices, std::vector<
 
         //computing normal for checking flipping
         for (int f_id:new_f_ids) {
-            Vector3 old_nv = (input_vertices[input_faces[f_id][1]] - input_vertices[input_faces[f_id][2]]).cross(input_vertices[input_faces[f_id][0]] - input_vertices[input_faces[f_id][2]]);
+            Eigen::Matrix<double, 3, 1> old_nv = (input_vertices[input_faces[f_id][1]] - input_vertices[input_faces[f_id][2]]).cross(input_vertices[input_faces[f_id][0]] - input_vertices[input_faces[f_id][2]]);
 
             for (int j = 0; j < 3; j++) {
                 if (input_faces[f_id][j] == v1_id || input_faces[f_id][j] == v2_id) {
-                    Vector3 new_nv = (input_vertices[input_faces[f_id][mod3(j + 1)]] - input_vertices[input_faces[f_id][mod3(j + 2)]]).cross(p - input_vertices[input_faces[f_id][mod3(j + 2)]]);
+                    Eigen::Matrix<double, 3, 1> new_nv = (input_vertices[input_faces[f_id][mod3(j + 1)]] - input_vertices[input_faces[f_id][mod3(j + 2)]]).cross(p - input_vertices[input_faces[f_id][mod3(j + 2)]]);
                     if (old_nv.dot(new_nv) <= 0)
                         return FAIL_FLIP;
                     //check new tris' area
@@ -344,7 +344,7 @@ void floatTetWild::collapsing(std::vector<Vector3>& input_vertices, std::vector<
         for (int f_id:new_f_ids) {
             for (int j = 0; j < 3; j++) {
                 if (input_faces[f_id][j] == v1_id || input_faces[f_id][j] == v2_id) {
-                    const std::array<Vector3, 3> tri = {{
+                    const std::array<Eigen::Matrix<double, 3, 1>, 3> tri = {{
                         p,
                         input_vertices[input_faces[f_id][mod3(j + 1)]],
                         input_vertices[input_faces[f_id][mod3(j + 2)]]
@@ -462,7 +462,7 @@ void floatTetWild::collapsing(std::vector<Vector3>& input_vertices, std::vector<
 
     while (!sm_queue.empty()) {
         std::array<int, 2> v_ids = sm_queue.top().v_ids;
-        Scalar old_weight = sm_queue.top().weight;
+        double old_weight = sm_queue.top().weight;
         sm_queue.pop();
 
         if (v_is_removed[v_ids[0]] || v_is_removed[v_ids[1]])
@@ -494,7 +494,7 @@ void floatTetWild::collapsing(std::vector<Vector3>& input_vertices, std::vector<
     logger().debug("{}  faces are collapsed!!", cnt_suc);
 }
 
-void floatTetWild::swapping(std::vector<Vector3>& input_vertices, std::vector<Vector3i>& input_faces,
+void floatTetWild::swapping(std::vector<Eigen::Matrix<double, 3, 1>>& input_vertices, std::vector<Eigen::Matrix<int, 3, 1>>& input_faces,
         const AABBWrapper& tree, const Parameters& params,
         std::vector<bool>& v_is_removed, std::vector<bool>& f_is_removed, std::vector<std::unordered_set<int>>& conn_fs) {
     std::vector<std::array<int, 2>> edges;
@@ -514,7 +514,7 @@ void floatTetWild::swapping(std::vector<Vector3>& input_vertices, std::vector<Ve
 
     std::priority_queue<ElementInQueue, std::vector<ElementInQueue>, cmp_l> sm_queue;
     for (auto &e: edges) {
-        Scalar weight = (input_vertices[e[0]] - input_vertices[e[1]]).squaredNorm();
+        double weight = (input_vertices[e[0]] - input_vertices[e[1]]).squaredNorm();
         sm_queue.push(ElementInQueue(e, weight));
         sm_queue.push(ElementInQueue(std::array<int, 2>({{e[1], e[0]}}), weight));
     }
@@ -542,9 +542,9 @@ void floatTetWild::swapping(std::vector<Vector3>& input_vertices, std::vector<Ve
         }
 
         //check coplanar
-        Scalar cos_a0 = get_angle_cos(input_vertices[n_v_ids[0]], input_vertices[v1_id], input_vertices[v2_id]);
-        Scalar cos_a1 = get_angle_cos(input_vertices[n_v_ids[1]], input_vertices[v1_id], input_vertices[v2_id]);
-        std::array<Vector3, 2> old_nvs;
+        double cos_a0 = get_angle_cos(input_vertices[n_v_ids[0]], input_vertices[v1_id], input_vertices[v2_id]);
+        double cos_a1 = get_angle_cos(input_vertices[n_v_ids[1]], input_vertices[v1_id], input_vertices[v2_id]);
+        std::array<Eigen::Matrix<double, 3, 1>, 2> old_nvs;
         for (int f = 0; f < 2; f++) {
             auto &a = input_vertices[input_faces[n12_f_ids[f]][0]];
             auto &b = input_vertices[input_faces[n12_f_ids[f]][1]];
@@ -572,9 +572,9 @@ void floatTetWild::swapping(std::vector<Vector3>& input_vertices, std::vector<Ve
             continue;
 
         //check quality
-        Scalar cos_a0_new = get_angle_cos(input_vertices[v1_id], input_vertices[n_v_ids[0]],
+        double cos_a0_new = get_angle_cos(input_vertices[v1_id], input_vertices[n_v_ids[0]],
                                           input_vertices[n_v_ids[1]]);
-        Scalar cos_a1_new = get_angle_cos(input_vertices[v2_id], input_vertices[n_v_ids[0]],
+        double cos_a1_new = get_angle_cos(input_vertices[v2_id], input_vertices[n_v_ids[0]],
                                           input_vertices[n_v_ids[1]]);
         if (std::min(cos_a0_new, cos_a1_new) <= std::min(cos_a0, cos_a1))
             continue;
@@ -646,9 +646,9 @@ void floatTetWild::swapping(std::vector<Vector3>& input_vertices, std::vector<Ve
                 }
 
             // check quality
-            Scalar cos_a = get_angle_cos(input_vertices[v_id], input_vertices[v1_id], input_vertices[v2_id]);
-            Scalar cos_a1 = get_angle_cos(input_vertices[v3_id], input_vertices[v1_id], input_vertices[v2_id]);
-            std::array<Vector3, 2> old_nvs;
+            double cos_a = get_angle_cos(input_vertices[v_id], input_vertices[v1_id], input_vertices[v2_id]);
+            double cos_a1 = get_angle_cos(input_vertices[v3_id], input_vertices[v1_id], input_vertices[v2_id]);
+            std::array<Eigen::Matrix<double, 3, 1>, 2> old_nvs;
             for (int f = 0; f < 2; f++) {
                 auto& a = input_vertices[input_faces[n12_f_ids[f]][0]];
                 auto& b = input_vertices[input_faces[n12_f_ids[f]][1]];
@@ -660,8 +660,8 @@ void floatTetWild::swapping(std::vector<Vector3>& input_vertices, std::vector<Ve
                 if (old_nvs[0].dot(old_nvs[1]) < 1-1e-6)//not coplanar
                     continue;
             }
-            Scalar cos_a_new = get_angle_cos(input_vertices[v1_id], input_vertices[v_id], input_vertices[v3_id]);
-            Scalar cos_a1_new = get_angle_cos(input_vertices[v2_id], input_vertices[v_id], input_vertices[v3_id]);
+            double cos_a_new = get_angle_cos(input_vertices[v1_id], input_vertices[v_id], input_vertices[v3_id]);
+            double cos_a1_new = get_angle_cos(input_vertices[v2_id], input_vertices[v_id], input_vertices[v3_id]);
             if (std::min(cos_a_new, cos_a1_new) <= std::min(cos_a, cos_a1))
                 continue;
 
@@ -720,9 +720,9 @@ void floatTetWild::swapping(std::vector<Vector3>& input_vertices, std::vector<Ve
     logger().debug("{}  faces are swapped!!", cnt);
 }
 
-void floatTetWild::flattening(std::vector<Vector3>& input_vertices, std::vector<Vector3i>& input_faces,
+void floatTetWild::flattening(std::vector<Eigen::Matrix<double, 3, 1>>& input_vertices, std::vector<Eigen::Matrix<int, 3, 1>>& input_faces,
         const AABBWrapper& sf_tree, const Parameters& params) {
-    std::vector<Vector3> ns(input_faces.size());
+    std::vector<Eigen::Matrix<double, 3, 1>> ns(input_faces.size());
     for (int i = 0; i < input_faces.size(); i++) {
         ns[i] = ((input_vertices[input_faces[i][2]] - input_vertices[input_faces[i][0]]).cross(
                 input_vertices[input_faces[i][1]] - input_vertices[input_faces[i][0]])).normalized();
@@ -743,7 +743,7 @@ void floatTetWild::flattening(std::vector<Vector3>& input_vertices, std::vector<
     }
     vector_unique(edges);
 
-    auto needs_flattening = [](const Vector3 &n1, const Vector3 &n2) {
+    auto needs_flattening = [](const Eigen::Matrix<double, 3, 1> &n1, const Eigen::Matrix<double, 3, 1> &n2) {
         if(n1.dot(n2)>0.98) {
             cout << std::setprecision(17) << n1.dot(n2) << endl;
             cout << n1.norm() << " " << n2.norm() << endl;
@@ -809,11 +809,11 @@ void floatTetWild::flattening(std::vector<Vector3>& input_vertices, std::vector<
             }
         }
         assert(n_v_ids.size() == 2 && n_v_ids[0] != n_v_ids[1]);
-        Vector3 n = (n1 + n2) / 2;
-//        Vector3 p = (input_vertices[e[0]] + input_vertices[e[1]]) / 2;
-        Vector3 p = (input_vertices[n_v_ids[0]] + input_vertices[n_v_ids[1]]) / 2;
+        Eigen::Matrix<double, 3, 1> n = (n1 + n2) / 2;
+//        Eigen::Matrix<double, 3, 1> p = (input_vertices[e[0]] + input_vertices[e[1]]) / 2;
+        Eigen::Matrix<double, 3, 1> p = (input_vertices[n_v_ids[0]] + input_vertices[n_v_ids[1]]) / 2;
 
-        std::array<Vector3, 2> old_ps;
+        std::array<Eigen::Matrix<double, 3, 1>, 2> old_ps;
         for (int j = 0; j < 2; j++) {
             old_ps[j] = input_vertices[e[j]];
             input_vertices[e[j]] -= n.dot(input_vertices[e[j]] - p) * n;
@@ -822,7 +822,7 @@ void floatTetWild::flattening(std::vector<Vector3>& input_vertices, std::vector<
 
         is_valid = true;
         for (int f_id: all_f_ids) {
-            const std::array<Vector3, 3> tri = {{input_vertices[input_faces[f_id][0]],
+            const std::array<Eigen::Matrix<double, 3, 1>, 3> tri = {{input_vertices[input_faces[f_id][0]],
                                                         input_vertices[input_faces[f_id][1]],
                                                         input_vertices[input_faces[f_id][2]]}};
             if (is_out_envelope(tri, sf_tree, params)) {
@@ -871,10 +871,10 @@ void floatTetWild::flattening(std::vector<Vector3>& input_vertices, std::vector<
     cout << "flattening " << ts << " faces" << endl;
 }
 
-floatTetWild::Scalar floatTetWild::get_angle_cos(const Vector3& p, const Vector3& p1, const Vector3& p2) {
-    Vector3 v1 = p1 - p;
-    Vector3 v2 = p2 - p;
-    Scalar res = v1.dot(v2) / (v1.norm() * v2.norm());
+floatTetWild::Scalar floatTetWild::get_angle_cos(const Eigen::Matrix<double, 3, 1>& p, const Eigen::Matrix<double, 3, 1>& p1, const Eigen::Matrix<double, 3, 1>& p2) {
+    Eigen::Matrix<double, 3, 1> v1 = p1 - p;
+    Eigen::Matrix<double, 3, 1> v2 = p2 - p;
+    double res = v1.dot(v2) / (v1.norm() * v2.norm());
     if(res > 1)
         return 1;
     if (res < -1)
@@ -882,7 +882,7 @@ floatTetWild::Scalar floatTetWild::get_angle_cos(const Vector3& p, const Vector3
     return res;
 }
 
-bool floatTetWild::is_out_envelope(const std::array<Vector3, 3>& vs, const AABBWrapper& tree, const Parameters& params) {
+bool floatTetWild::is_out_envelope(const std::array<Eigen::Matrix<double, 3, 1>, 3>& vs, const AABBWrapper& tree, const Parameters& params) {
 #ifdef NEW_ENVELOPE
     return tree.is_out_sf_envelope_exact_simplify(vs);
 #else
@@ -900,7 +900,7 @@ bool floatTetWild::is_out_envelope(const std::array<Vector3, 3>& vs, const AABBW
     // GEO::vec3 nearest_point;
     // double sq_distg;
     // GEO::index_t prev_facet = tree.nearest_facet(init_point, nearest_point, sq_distg);
-    // Scalar sq_dist = sq_distg;
+    // double sq_dist = sq_distg;
     // if (sq_dist > params.eps_2_simplification)
     //     return true;
 
@@ -923,7 +923,7 @@ bool floatTetWild::is_out_envelope(const std::array<Vector3, 3>& vs, const AABBW
     // return false;
 }
 
-void floatTetWild::check_surface(std::vector<Vector3>& input_vertices, std::vector<Vector3i>& input_faces, const std::vector<bool>& f_is_removed,
+void floatTetWild::check_surface(std::vector<Eigen::Matrix<double, 3, 1>>& input_vertices, std::vector<Eigen::Matrix<int, 3, 1>>& input_faces, const std::vector<bool>& f_is_removed,
                    const AABBWrapper& tree, const Parameters& params) {
     cout<<"checking surface"<<endl;
     bool is_valid = true;
@@ -934,7 +934,7 @@ void floatTetWild::check_surface(std::vector<Vector3>& input_vertices, std::vect
         sample_triangle(
                 {{input_vertices[input_faces[i][0]], input_vertices[input_faces[i][1]], input_vertices[input_faces[i][2]]}},
                 ps, params.dd_simplification);
-        Scalar dist = tree.dist_sf_envelope(ps, params.eps_2);
+        double dist = tree.dist_sf_envelope(ps, params.eps_2);
         if (dist > 0) {
             cout << "is_out_sf_envelope!!" << endl;
             is_valid = false;
@@ -951,7 +951,7 @@ void floatTetWild::check_surface(std::vector<Vector3>& input_vertices, std::vect
 }
 
 
-void floatTetWild::output_component(const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces,
+void floatTetWild::output_component(const std::vector<Eigen::Matrix<double, 3, 1>>& input_vertices, const std::vector<Eigen::Matrix<int, 3, 1>>& input_faces,
         const std::vector<int>& input_tags){
     return;
 

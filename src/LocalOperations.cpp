@@ -27,7 +27,7 @@ namespace floatTetWild {
 
 using floatTetWild::Scalar;
 
-// void floatTetWild::init_b_tree(const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces,
+// void floatTetWild::init_b_tree(const std::vector<Eigen::Matrix<double, 3, 1>>& input_vertices, const std::vector<Eigen::Matrix<int, 3, 1>>& input_faces,
 //         GEO::Mesh& b_mesh) {
 // //    std::vector<std::array<int, 2>> edges;
 // //    for(int i=0;i<sf_mesh.facets.nb();i++){
@@ -271,7 +271,7 @@ bool floatTetWild::is_boundary_edge(const Mesh& mesh, int v1_id, int v2_id, cons
     ps.push_back(GEO::vec3(mesh.tet_vertices[v1_id].pos[0], mesh.tet_vertices[v1_id].pos[1],
             mesh.tet_vertices[v1_id].pos[2]));
     int p0_id = 0;
-    Scalar l = get_edge_length(mesh, v1_id, v2_id);
+    double l = get_edge_length(mesh, v1_id, v2_id);
     int N = l / mesh.params.dd + 1;
     ps.push_back(GEO::vec3(mesh.tet_vertices[v2_id][0], mesh.tet_vertices[v2_id][1],
                            mesh.tet_vertices[v2_id][2]));
@@ -347,7 +347,7 @@ bool floatTetWild::is_isolate_surface_point(const Mesh& mesh, int v_id) {
     return true;
 }
 
-bool floatTetWild::is_point_out_envelope(const Mesh& mesh, const Vector3& p, const AABBWrapper& tree){
+bool floatTetWild::is_point_out_envelope(const Mesh& mesh, const Eigen::Matrix<double, 3, 1>& p, const AABBWrapper& tree){
 #ifdef NEW_ENVELOPE
     return tree.is_out_sf_envelope_exact(p);
 #else
@@ -361,7 +361,7 @@ bool floatTetWild::is_point_out_envelope(const Mesh& mesh, const Vector3& p, con
 //    return false;
 }
 
-bool floatTetWild::is_point_out_boundary_envelope(const Mesh& mesh, const Vector3& p, const AABBWrapper& tree){
+bool floatTetWild::is_point_out_boundary_envelope(const Mesh& mesh, const Eigen::Matrix<double, 3, 1>& p, const AABBWrapper& tree){
     if(mesh.is_input_all_inserted)
         return false;
 
@@ -383,7 +383,7 @@ Scalar floatTetWild::get_quality(const Mesh& mesh, const MeshTet& t) {
     }
 
     return AMIPS_energy(T);
-//    Scalar q = AMIPS_energy(T);
+//    double q = AMIPS_energy(T);
 //    if (q > 1e8)
 //        return MAX_ENERGY;
 //    else
@@ -397,7 +397,7 @@ Scalar floatTetWild::get_quality(const Mesh& mesh, int t_id) {
             T[i * 3 + j] = mesh.tet_vertices[mesh.tets[t_id][i]].pos[j];
     }
     return AMIPS_energy(T);
-//    Scalar q = AMIPS_energy(T);
+//    double q = AMIPS_energy(T);
 //    if (q > 1e8)
 //        return MAX_ENERGY;
 //    else
@@ -408,18 +408,18 @@ Scalar floatTetWild::get_quality(const MeshVertex& v0, const MeshVertex& v1, con
     std::array<Scalar, 12> T = {{v0.pos[0], v0.pos[1], v0.pos[2], v1.pos[0], v1.pos[1], v1.pos[2],
                                         v2.pos[0], v2.pos[1], v2.pos[2], v3.pos[0], v3.pos[1], v3.pos[2]}};
     return AMIPS_energy(T);
-//    Scalar q = AMIPS_energy(T);
+//    double q = AMIPS_energy(T);
 //    if (q > 1e8)
 //        return MAX_ENERGY;
 //    else
 //        return q;
 }
 
-Scalar floatTetWild::get_quality(const Vector3& v0, const Vector3& v1, const Vector3& v2, const Vector3& v3){
+Scalar floatTetWild::get_quality(const Eigen::Matrix<double, 3, 1>& v0, const Eigen::Matrix<double, 3, 1>& v1, const Eigen::Matrix<double, 3, 1>& v2, const Eigen::Matrix<double, 3, 1>& v3){
     std::array<Scalar, 12> T = {{v0[0], v0[1], v0[2], v1[0], v1[1], v1[2],
                                         v2[0], v2[1], v2[2], v3[0], v3[1], v3[2]}};
     return AMIPS_energy(T);
-//    Scalar q = AMIPS_energy(T);
+//    double q = AMIPS_energy(T);
 //    if (q > 1e8)
 //        return MAX_ENERGY;
 //    else
@@ -460,7 +460,7 @@ bool floatTetWild::is_inverted(const Mesh& mesh, int t_id) {
     return true;
 }
 
-bool floatTetWild::is_inverted(const Mesh& mesh, int t_id, int j, const Vector3& new_p) {
+bool floatTetWild::is_inverted(const Mesh& mesh, int t_id, int j, const Eigen::Matrix<double, 3, 1>& new_p) {
     int ori;
     if (j == 0) {
         ori = Predicates::orient_3d(new_p, mesh.tet_vertices[mesh.tets[t_id][1]].pos,
@@ -490,19 +490,19 @@ bool floatTetWild::is_inverted(const MeshVertex& v0, const MeshVertex& v1, const
     return true;
 }
 
-bool floatTetWild::is_inverted(const Vector3& v0, const Vector3& v1, const Vector3& v2, const Vector3& v3){
+bool floatTetWild::is_inverted(const Eigen::Matrix<double, 3, 1>& v0, const Eigen::Matrix<double, 3, 1>& v1, const Eigen::Matrix<double, 3, 1>& v2, const Eigen::Matrix<double, 3, 1>& v3){
     if (Predicates::orient_3d(v0, v1, v2, v3) == Predicates::ORI_POSITIVE)
         return false;
     return true;
 }
 
-bool floatTetWild::is_degenerate(const Vector3& v0, const Vector3& v1, const Vector3& v2, const Vector3& v3){
+bool floatTetWild::is_degenerate(const Eigen::Matrix<double, 3, 1>& v0, const Eigen::Matrix<double, 3, 1>& v1, const Eigen::Matrix<double, 3, 1>& v2, const Eigen::Matrix<double, 3, 1>& v3){
     if (Predicates::orient_3d(v0, v1, v2, v3) == Predicates::ORI_ZERO)
         return true;
     return false;
 }
 
-bool floatTetWild::is_out_boundary_envelope(const Mesh& mesh, int v_id, const Vector3& new_pos, const AABBWrapper& tree){
+bool floatTetWild::is_out_boundary_envelope(const Mesh& mesh, int v_id, const Eigen::Matrix<double, 3, 1>& new_pos, const AABBWrapper& tree){
     if(mesh.is_input_all_inserted)
         return false;
     if(!mesh.tet_vertices[v_id].is_on_cut)
@@ -539,7 +539,7 @@ bool floatTetWild::is_out_boundary_envelope(const Mesh& mesh, int v_id, const Ve
     ps.push_back(GEO::vec3(new_pos[0], new_pos[1], new_pos[2]));
     int p0_id = 0;
     for(int b_v_id:b_v_ids) {
-        Scalar l = get_edge_length(mesh, v_id, b_v_id);
+        double l = get_edge_length(mesh, v_id, b_v_id);
         int N = l / mesh.params.dd + 1;
         ps.push_back(GEO::vec3(mesh.tet_vertices[b_v_id][0], mesh.tet_vertices[b_v_id][1],
                                mesh.tet_vertices[b_v_id][2]));
@@ -556,7 +556,7 @@ bool floatTetWild::is_out_boundary_envelope(const Mesh& mesh, int v_id, const Ve
 //    GEO::vec3 nearest_point;
 //    double sq_distg;
 //    GEO::index_t prev_facet = b_tree.nearest_facet(init_point, nearest_point, sq_distg);
-//    Scalar sq_dist = sq_distg;
+//    double sq_dist = sq_distg;
 //    if(sq_dist > mesh.params.eps_2)
 //        return true;
 //
@@ -585,7 +585,7 @@ bool floatTetWild::is_out_boundary_envelope(const Mesh& mesh, int v_id, const Ve
 //
 //    std::vector<GEO::vec3> ps;
 //    for(int b_v_id:b_v_ids) {
-//        Scalar l = get_edge_length(mesh, v_id, b_v_id);
+//        double l = get_edge_length(mesh, v_id, b_v_id);
 //        int N = l / mesh.params.dd + 1;
 ////        ps.push_back(GEO::vec3(mesh.tet_vertices[v_id][0], mesh.tet_vertices[v_id][1], mesh.tet_vertices[v_id][2]));
 //        ps.push_back(GEO::vec3(new_pos[0], new_pos[1], new_pos[2]));
@@ -614,7 +614,7 @@ bool floatTetWild::is_out_boundary_envelope(const Mesh& mesh, int v_id, const Ve
 }
 
 #include <sstream>
-bool floatTetWild::is_out_envelope(Mesh& mesh, int v_id, const Vector3& new_pos, const AABBWrapper& tree) {
+bool floatTetWild::is_out_envelope(Mesh& mesh, int v_id, const Eigen::Matrix<double, 3, 1>& new_pos, const AABBWrapper& tree) {
 #ifdef NEW_ENVELOPE
     if(tree.is_out_sf_envelope_exact(new_pos))
         return true;
@@ -628,7 +628,7 @@ bool floatTetWild::is_out_envelope(Mesh& mesh, int v_id, const Vector3& new_pos,
     for (int t_id:mesh.tet_vertices[v_id].conn_tets) {
         for (int j = 0; j < 4; j++) {
             if (mesh.tets[t_id][j] != v_id && mesh.tets[t_id].is_surface_fs[j] <= 0) {
-                std::array<Vector3, 3> vs;
+                std::array<Eigen::Matrix<double, 3, 1>, 3> vs;
                 for (int k = 0; k < 3; k++) {
                     if (mesh.tets[t_id][mod4(j + 1 + k)] == v_id)
                         vs[k] = new_pos;
@@ -710,7 +710,7 @@ bool floatTetWild::is_out_envelope(Mesh& mesh, int v_id, const Vector3& new_pos,
 //    GEO::vec3 nearest_point;
 //    double sq_distg;
 //    GEO::index_t prev_facet = sf_tree.nearest_facet(init_point, nearest_point, sq_distg);
-//    Scalar sq_dist = sq_distg;
+//    double sq_dist = sq_distg;
 //    if(sq_dist > mesh.params.eps_2)
 //        return true;
 //
@@ -718,7 +718,7 @@ bool floatTetWild::is_out_envelope(Mesh& mesh, int v_id, const Vector3& new_pos,
 //    for (int t_id:mesh.tet_vertices[v_id].conn_tets) {
 //        for (int j = 0; j < 4; j++) {
 //            if (mesh.tets[t_id][j] != v_id && mesh.tets[t_id].is_surface_fs[j] < 0) {
-//                std::array<Vector3, 3> vs;
+//                std::array<Eigen::Matrix<double, 3, 1>, 3> vs;
 //                for(int k=0;k<3;k++){
 //                    if(mesh.tets[t_id][mod4(j + 1 + k)] == v_id)
 //                        vs[k] = new_pos;
@@ -752,8 +752,8 @@ bool floatTetWild::is_out_envelope(Mesh& mesh, int v_id, const Vector3& new_pos,
 //    return false;
 }
 
-void floatTetWild::sample_triangle(const std::array<Vector3, 3>& vs, std::vector<GEO::vec3>& ps, Scalar sampling_dist) {
-    Scalar sqrt3_2 = std::sqrt(3) / 2;
+void floatTetWild::sample_triangle(const std::array<Eigen::Matrix<double, 3, 1>, 3>& vs, std::vector<GEO::vec3>& ps, double sampling_dist) {
+    double sqrt3_2 = std::sqrt(3) / 2;
 
     std::array<Scalar, 3> ls;
     for (int i = 0; i < 3; i++) {
@@ -762,7 +762,7 @@ void floatTetWild::sample_triangle(const std::array<Vector3, 3>& vs, std::vector
     auto min_max = std::minmax_element(ls.begin(), ls.end());
     int min_i = min_max.first - ls.begin();
     int max_i = min_max.second - ls.begin();
-    Scalar N = sqrt(ls[max_i]) / sampling_dist;
+    double N = sqrt(ls[max_i]) / sampling_dist;
     if (N <= 1) {
         for (int i = 0; i < 3; i++)
             ps.push_back(GEO::vec3(vs[i][0], vs[i][1], vs[i][2]));
@@ -781,7 +781,7 @@ void floatTetWild::sample_triangle(const std::array<Vector3, 3>& vs, std::vector
     }
     ps.push_back(v1);
 
-    Scalar h = GEO::distance(GEO::dot((v2 - v0), (v1 - v0)) * (v1 - v0) / ls[max_i] + v0, v2);
+    double h = GEO::distance(GEO::dot((v2 - v0), (v1 - v0)) * (v1 - v0) / ls[max_i] + v0, v2);
     int M = h / (sqrt3_2 * sampling_dist);
     if (M < 1) {
         ps.push_back(v2);
@@ -790,7 +790,7 @@ void floatTetWild::sample_triangle(const std::array<Vector3, 3>& vs, std::vector
 
     GEO::vec3 n_v0v2 = GEO::normalize(v2 - v0);
     GEO::vec3 n_v1v2 = GEO::normalize(v2 - v1);
-    Scalar tan_v0, tan_v1, sin_v0, sin_v1;
+    double tan_v0, tan_v1, sin_v0, sin_v1;
     sin_v0 = GEO::length(GEO::cross((v2 - v0), (v1 - v0))) / (GEO::distance(v0, v2) * GEO::distance(v0, v1));
     tan_v0 = GEO::length(GEO::cross((v2 - v0), (v1 - v0))) / GEO::dot((v2 - v0), (v1 - v0));
     tan_v1 = GEO::length(GEO::cross((v2 - v1), (v0 - v1))) / GEO::dot((v2 - v1), (v0 - v1));
@@ -807,7 +807,7 @@ void floatTetWild::sample_triangle(const std::array<Vector3, 3>& vs, std::vector
         if (GEO::distance(v0_m, v1_m) <= sampling_dist)
             break;
 
-        Scalar delta_d = ((n + (m % 2) / 2.0) - m * sqrt3_2 / tan_v0) * sampling_dist;
+        double delta_d = ((n + (m % 2) / 2.0) - m * sqrt3_2 / tan_v0) * sampling_dist;
         GEO::vec3 v = v0_m + delta_d * n_v0v1;
         int N1 = GEO::distance(v, v1_m) / sampling_dist;
 //        ps.push_back(v0_m);
@@ -840,12 +840,12 @@ void floatTetWild::sample_triangle(const std::array<Vector3, 3>& vs, std::vector
     }
 }
 
-bool floatTetWild::sample_triangle_and_check_is_out(const std::array<Vector3, 3>& vs, Scalar sampling_dist,
-        Scalar eps_2, const AABBWrapper& tree, GEO::index_t& prev_facet){
+bool floatTetWild::sample_triangle_and_check_is_out(const std::array<Eigen::Matrix<double, 3, 1>, 3>& vs, double sampling_dist,
+        double eps_2, const AABBWrapper& tree, GEO::index_t& prev_facet){
     GEO::vec3 nearest_point;
     double sq_dist = std::numeric_limits<double>::max();
 
-    Scalar sqrt3_2 = std::sqrt(3) / 2;
+    double sqrt3_2 = std::sqrt(3) / 2;
 
     std::array<Scalar, 3> ls;
     for (int i = 0; i < 3; i++) {
@@ -854,7 +854,7 @@ bool floatTetWild::sample_triangle_and_check_is_out(const std::array<Vector3, 3>
     auto min_max = std::minmax_element(ls.begin(), ls.end());
     int min_i = min_max.first - ls.begin();
     int max_i = min_max.second - ls.begin();
-    Scalar N = sqrt(ls[max_i]) / sampling_dist;
+    double N = sqrt(ls[max_i]) / sampling_dist;
     if (N <= 1) {
         for (int i = 0; i < 3; i++) {
 //            ps.push_back(GEO::vec3(vs[i][0], vs[i][1], vs[i][2]));
@@ -881,7 +881,7 @@ bool floatTetWild::sample_triangle_and_check_is_out(const std::array<Vector3, 3>
     if (tree.is_out_sf_envelope(v1, eps_2, prev_facet, sq_dist, nearest_point))
         return true;
 
-    Scalar h = GEO::distance(GEO::dot((v2 - v0), (v1 - v0)) * (v1 - v0) / ls[max_i] + v0, v2);
+    double h = GEO::distance(GEO::dot((v2 - v0), (v1 - v0)) * (v1 - v0) / ls[max_i] + v0, v2);
     int M = h / (sqrt3_2 * sampling_dist);
     if (M < 1) {
 //        ps.push_back(v2);
@@ -891,7 +891,7 @@ bool floatTetWild::sample_triangle_and_check_is_out(const std::array<Vector3, 3>
 
     GEO::vec3 n_v0v2 = GEO::normalize(v2 - v0);
     GEO::vec3 n_v1v2 = GEO::normalize(v2 - v1);
-    Scalar tan_v0, tan_v1, sin_v0, sin_v1;
+    double tan_v0, tan_v1, sin_v0, sin_v1;
     sin_v0 = GEO::length(GEO::cross((v2 - v0), (v1 - v0))) / (GEO::distance(v0, v2) * GEO::distance(v0, v1));
     tan_v0 = GEO::length(GEO::cross((v2 - v0), (v1 - v0))) / GEO::dot((v2 - v0), (v1 - v0));
     tan_v1 = GEO::length(GEO::cross((v2 - v1), (v0 - v1))) / GEO::dot((v2 - v1), (v0 - v1));
@@ -908,7 +908,7 @@ bool floatTetWild::sample_triangle_and_check_is_out(const std::array<Vector3, 3>
         if (GEO::distance(v0_m, v1_m) <= sampling_dist)
             break;
 
-        Scalar delta_d = ((n + (m % 2) / 2.0) - m * sqrt3_2 / tan_v0) * sampling_dist;
+        double delta_d = ((n + (m % 2) / 2.0) - m * sqrt3_2 / tan_v0) * sampling_dist;
         GEO::vec3 v = v0_m + delta_d * n_v0v1;
         int N1 = GEO::distance(v, v1_m) / sampling_dist;
         for (int i = 0; i <= N1; i++) {
@@ -1062,7 +1062,7 @@ void floatTetWild::pausee(std::string msg) {
     //     exit(0);
 }
 
-bool floatTetWild::is_energy_unstable(const std::array<Scalar, 12>& T, Scalar res) {
+bool floatTetWild::is_energy_unstable(const std::array<Scalar, 12>& T, double res) {
     static const std::vector<std::array<int, 4>> combs = {{{0, 1, 3, 2}},
                                                           {{0, 2, 1, 3}},
                                                           {{0, 2, 3, 1}},
@@ -1086,7 +1086,7 @@ bool floatTetWild::is_energy_unstable(const std::array<Scalar, 12>& T, Scalar re
                                                           {{3, 1, 2, 0}},
                                                           {{3, 2, 0, 1}},
                                                           {{3, 2, 1, 0}}};
-    Scalar res0;
+    double res0;
     if (std::isinf(res))
         return true;
 
@@ -1096,7 +1096,7 @@ bool floatTetWild::is_energy_unstable(const std::array<Scalar, 12>& T, Scalar re
             for (int k = 0; k < 3; k++)
                 tmp_T[j * 3 + k] = T[combs[i][j] * 3 + k];
         }
-        Scalar res1 = AMIPS_energy_aux(tmp_T);
+        double res1 = AMIPS_energy_aux(tmp_T);
         if (std::isinf(res1))
             continue;
         if (res0 == 0)
@@ -1112,7 +1112,7 @@ int cnt_stable = 0;
 int cnt_large = 0;
 #include <floattetwild/Rational.h>
 Scalar floatTetWild::AMIPS_energy(const std::array<Scalar, 12>& T) {
-    Scalar res = AMIPS_energy_aux(T);
+    double res = AMIPS_energy_aux(T);
     if(use_old_energy) {
         return res;
     }
@@ -1139,8 +1139,8 @@ Scalar floatTetWild::AMIPS_energy(const std::array<Scalar, 12>& T) {
 //        }
 //        //fortest
 
-        if(is_degenerate(Vector3(T[0], T[1], T[2]), Vector3(T[3], T[4], T[5]), Vector3(T[6], T[7], T[8]),
-                    Vector3(T[9], T[10], T[11]))) {
+        if(is_degenerate(Eigen::Matrix<double, 3, 1>(T[0], T[1], T[2]), Eigen::Matrix<double, 3, 1>(T[3], T[4], T[5]), Eigen::Matrix<double, 3, 1>(T[6], T[7], T[8]),
+                    Eigen::Matrix<double, 3, 1>(T[9], T[10], T[11]))) {
             pausee("energy computation degenerate found!!!");
             return std::numeric_limits<double>::infinity();
         }
@@ -1184,7 +1184,7 @@ Scalar floatTetWild::AMIPS_energy(const std::array<Scalar, 12>& T) {
 }
 
 Scalar floatTetWild::AMIPS_energy_aux(const std::array<Scalar, 12>& T) {
-    Scalar helper_0[12];
+    double helper_0[12];
     helper_0[0] = T[0];
     helper_0[1] = T[1];
     helper_0[2] = T[2];
@@ -1197,34 +1197,34 @@ Scalar floatTetWild::AMIPS_energy_aux(const std::array<Scalar, 12>& T) {
     helper_0[9] = T[9];
     helper_0[10] = T[10];
     helper_0[11] = T[11];
-    Scalar helper_1 = helper_0[2];
-    Scalar helper_2 = helper_0[11];
-    Scalar helper_3 = helper_0[0];
-    Scalar helper_4 = helper_0[3];
-    Scalar helper_5 = helper_0[9];
-    Scalar helper_6 = 0.577350269189626 * helper_3 - 1.15470053837925 * helper_4 + 0.577350269189626 * helper_5;
-    Scalar helper_7 = helper_0[1];
-    Scalar helper_8 = helper_0[4];
-    Scalar helper_9 = helper_0[7];
-    Scalar helper_10 = helper_0[10];
-    Scalar helper_11 = 0.408248290463863 * helper_10 + 0.408248290463863 * helper_7 + 0.408248290463863 * helper_8 -
+    double helper_1 = helper_0[2];
+    double helper_2 = helper_0[11];
+    double helper_3 = helper_0[0];
+    double helper_4 = helper_0[3];
+    double helper_5 = helper_0[9];
+    double helper_6 = 0.577350269189626 * helper_3 - 1.15470053837925 * helper_4 + 0.577350269189626 * helper_5;
+    double helper_7 = helper_0[1];
+    double helper_8 = helper_0[4];
+    double helper_9 = helper_0[7];
+    double helper_10 = helper_0[10];
+    double helper_11 = 0.408248290463863 * helper_10 + 0.408248290463863 * helper_7 + 0.408248290463863 * helper_8 -
                        1.22474487139159 * helper_9;
-    Scalar helper_12 = 0.577350269189626 * helper_10 + 0.577350269189626 * helper_7 - 1.15470053837925 * helper_8;
-    Scalar helper_13 = helper_0[6];
-    Scalar helper_14 = -1.22474487139159 * helper_13 + 0.408248290463863 * helper_3 + 0.408248290463863 * helper_4 +
+    double helper_12 = 0.577350269189626 * helper_10 + 0.577350269189626 * helper_7 - 1.15470053837925 * helper_8;
+    double helper_13 = helper_0[6];
+    double helper_14 = -1.22474487139159 * helper_13 + 0.408248290463863 * helper_3 + 0.408248290463863 * helper_4 +
                        0.408248290463863 * helper_5;
-    Scalar helper_15 = helper_0[5];
-    Scalar helper_16 = helper_0[8];
-    Scalar helper_17 = 0.408248290463863 * helper_1 + 0.408248290463863 * helper_15 - 1.22474487139159 * helper_16 +
+    double helper_15 = helper_0[5];
+    double helper_16 = helper_0[8];
+    double helper_17 = 0.408248290463863 * helper_1 + 0.408248290463863 * helper_15 - 1.22474487139159 * helper_16 +
                        0.408248290463863 * helper_2;
-    Scalar helper_18 = 0.577350269189626 * helper_1 - 1.15470053837925 * helper_15 + 0.577350269189626 * helper_2;
-    Scalar helper_19 = 0.5 * helper_13 + 0.5 * helper_4;
-    Scalar helper_20 = 0.5 * helper_8 + 0.5 * helper_9;
-    Scalar helper_21 = 0.5 * helper_15 + 0.5 * helper_16;
-    Scalar helper_22 = (helper_1 - helper_2) * (helper_11 * helper_6 - helper_12 * helper_14) -
+    double helper_18 = 0.577350269189626 * helper_1 - 1.15470053837925 * helper_15 + 0.577350269189626 * helper_2;
+    double helper_19 = 0.5 * helper_13 + 0.5 * helper_4;
+    double helper_20 = 0.5 * helper_8 + 0.5 * helper_9;
+    double helper_21 = 0.5 * helper_15 + 0.5 * helper_16;
+    double helper_22 = (helper_1 - helper_2) * (helper_11 * helper_6 - helper_12 * helper_14) -
                        (-helper_10 + helper_7) * (-helper_14 * helper_18 + helper_17 * helper_6) +
                        (helper_3 - helper_5) * (-helper_11 * helper_18 + helper_12 * helper_17);
-    Scalar res = -(helper_1 * (-1.5 * helper_1 + 0.5 * helper_2 + helper_21) +
+    double res = -(helper_1 * (-1.5 * helper_1 + 0.5 * helper_2 + helper_21) +
                    helper_10 * (-1.5 * helper_10 + helper_20 + 0.5 * helper_7) +
                    helper_13 * (-1.5 * helper_13 + 0.5 * helper_3 + 0.5 * helper_4 + 0.5 * helper_5) +
                    helper_15 * (0.5 * helper_1 - 1.5 * helper_15 + 0.5 * helper_16 + 0.5 * helper_2) +
@@ -1244,8 +1244,8 @@ Scalar floatTetWild::AMIPS_energy_aux(const std::array<Scalar, 12>& T) {
     return res;
 }
 
-void floatTetWild::AMIPS_jacobian(const std::array<Scalar, 12>& T, Vector3& result_0){
-    Scalar helper_0[12];
+void floatTetWild::AMIPS_jacobian(const std::array<Scalar, 12>& T, Eigen::Matrix<double, 3, 1>& result_0){
+    double helper_0[12];
     helper_0[0] = T[0];
     helper_0[1] = T[1];
     helper_0[2] = T[2];
@@ -1258,60 +1258,60 @@ void floatTetWild::AMIPS_jacobian(const std::array<Scalar, 12>& T, Vector3& resu
     helper_0[9] = T[9];
     helper_0[10] = T[10];
     helper_0[11] = T[11];
-    Scalar helper_1 = helper_0[1];
-    Scalar helper_2 = helper_0[10];
-    Scalar helper_3 = helper_1 - helper_2;
-    Scalar helper_4 = helper_0[0];
-    Scalar helper_5 = helper_0[3];
-    Scalar helper_6 = helper_0[9];
-    Scalar helper_7 = 0.577350269189626*helper_4 - 1.15470053837925*helper_5 + 0.577350269189626*helper_6;
-    Scalar helper_8 = helper_0[2];
-    Scalar helper_9 = 0.408248290463863*helper_8;
-    Scalar helper_10 = helper_0[5];
-    Scalar helper_11 = 0.408248290463863*helper_10;
-    Scalar helper_12 = helper_0[8];
-    Scalar helper_13 = 1.22474487139159*helper_12;
-    Scalar helper_14 = helper_0[11];
-    Scalar helper_15 = 0.408248290463863*helper_14;
-    Scalar helper_16 = helper_11 - helper_13 + helper_15 + helper_9;
-    Scalar helper_17 = 0.577350269189626*helper_8;
-    Scalar helper_18 = 1.15470053837925*helper_10;
-    Scalar helper_19 = 0.577350269189626*helper_14;
-    Scalar helper_20 = helper_17 - helper_18 + helper_19;
-    Scalar helper_21 = helper_0[6];
-    Scalar helper_22 = -1.22474487139159*helper_21 + 0.408248290463863*helper_4 + 0.408248290463863*helper_5 + 0.408248290463863*helper_6;
-    Scalar helper_23 = helper_16*helper_7 - helper_20*helper_22;
-    Scalar helper_24 = -helper_14 + helper_8;
-    Scalar helper_25 = 0.408248290463863*helper_1;
-    Scalar helper_26 = helper_0[4];
-    Scalar helper_27 = 0.408248290463863*helper_26;
-    Scalar helper_28 = helper_0[7];
-    Scalar helper_29 = 1.22474487139159*helper_28;
-    Scalar helper_30 = 0.408248290463863*helper_2;
-    Scalar helper_31 = helper_25 + helper_27 - helper_29 + helper_30;
-    Scalar helper_32 = helper_31*helper_7;
-    Scalar helper_33 = 0.577350269189626*helper_1;
-    Scalar helper_34 = 1.15470053837925*helper_26;
-    Scalar helper_35 = 0.577350269189626*helper_2;
-    Scalar helper_36 = helper_33 - helper_34 + helper_35;
-    Scalar helper_37 = helper_22*helper_36;
-    Scalar helper_38 = helper_4 - helper_6;
-    Scalar helper_39 = helper_23*helper_3 - helper_24*(helper_32 - helper_37) - helper_38*(helper_16*helper_36 - helper_20*helper_31);
-    Scalar helper_40 = pow(pow(helper_39, 2), -0.333333333333333);
-    Scalar helper_41 = 0.707106781186548*helper_10 - 0.707106781186548*helper_12;
-    Scalar helper_42 = 0.707106781186548*helper_26 - 0.707106781186548*helper_28;
-    Scalar helper_43 = 0.5*helper_21 + 0.5*helper_5;
-    Scalar helper_44 = 0.5*helper_26 + 0.5*helper_28;
-    Scalar helper_45 = 0.5*helper_10 + 0.5*helper_12;
-    Scalar helper_46 = 0.666666666666667*(helper_1*(-1.5*helper_1 + 0.5*helper_2 + helper_44) + helper_10*(-1.5*helper_10 + 0.5*helper_12 + 0.5*helper_14 + 0.5*helper_8) + helper_12*(0.5*helper_10 - 1.5*helper_12 + 0.5*helper_14 + 0.5*helper_8) + helper_14*(-1.5*helper_14 + helper_45 + 0.5*helper_8) + helper_2*(0.5*helper_1 - 1.5*helper_2 + helper_44) + helper_21*(-1.5*helper_21 + 0.5*helper_4 + 0.5*helper_5 + 0.5*helper_6) + helper_26*(0.5*helper_1 + 0.5*helper_2 - 1.5*helper_26 + 0.5*helper_28) + helper_28*(0.5*helper_1 + 0.5*helper_2 + 0.5*helper_26 - 1.5*helper_28) + helper_4*(-1.5*helper_4 + helper_43 + 0.5*helper_6) + helper_5*(0.5*helper_21 + 0.5*helper_4 - 1.5*helper_5 + 0.5*helper_6) + helper_6*(0.5*helper_4 + helper_43 - 1.5*helper_6) + helper_8*(0.5*helper_14 + helper_45 - 1.5*helper_8))/helper_39;
-    Scalar helper_47 = -0.707106781186548*helper_21 + 0.707106781186548*helper_5;
+    double helper_1 = helper_0[1];
+    double helper_2 = helper_0[10];
+    double helper_3 = helper_1 - helper_2;
+    double helper_4 = helper_0[0];
+    double helper_5 = helper_0[3];
+    double helper_6 = helper_0[9];
+    double helper_7 = 0.577350269189626*helper_4 - 1.15470053837925*helper_5 + 0.577350269189626*helper_6;
+    double helper_8 = helper_0[2];
+    double helper_9 = 0.408248290463863*helper_8;
+    double helper_10 = helper_0[5];
+    double helper_11 = 0.408248290463863*helper_10;
+    double helper_12 = helper_0[8];
+    double helper_13 = 1.22474487139159*helper_12;
+    double helper_14 = helper_0[11];
+    double helper_15 = 0.408248290463863*helper_14;
+    double helper_16 = helper_11 - helper_13 + helper_15 + helper_9;
+    double helper_17 = 0.577350269189626*helper_8;
+    double helper_18 = 1.15470053837925*helper_10;
+    double helper_19 = 0.577350269189626*helper_14;
+    double helper_20 = helper_17 - helper_18 + helper_19;
+    double helper_21 = helper_0[6];
+    double helper_22 = -1.22474487139159*helper_21 + 0.408248290463863*helper_4 + 0.408248290463863*helper_5 + 0.408248290463863*helper_6;
+    double helper_23 = helper_16*helper_7 - helper_20*helper_22;
+    double helper_24 = -helper_14 + helper_8;
+    double helper_25 = 0.408248290463863*helper_1;
+    double helper_26 = helper_0[4];
+    double helper_27 = 0.408248290463863*helper_26;
+    double helper_28 = helper_0[7];
+    double helper_29 = 1.22474487139159*helper_28;
+    double helper_30 = 0.408248290463863*helper_2;
+    double helper_31 = helper_25 + helper_27 - helper_29 + helper_30;
+    double helper_32 = helper_31*helper_7;
+    double helper_33 = 0.577350269189626*helper_1;
+    double helper_34 = 1.15470053837925*helper_26;
+    double helper_35 = 0.577350269189626*helper_2;
+    double helper_36 = helper_33 - helper_34 + helper_35;
+    double helper_37 = helper_22*helper_36;
+    double helper_38 = helper_4 - helper_6;
+    double helper_39 = helper_23*helper_3 - helper_24*(helper_32 - helper_37) - helper_38*(helper_16*helper_36 - helper_20*helper_31);
+    double helper_40 = pow(pow(helper_39, 2), -0.333333333333333);
+    double helper_41 = 0.707106781186548*helper_10 - 0.707106781186548*helper_12;
+    double helper_42 = 0.707106781186548*helper_26 - 0.707106781186548*helper_28;
+    double helper_43 = 0.5*helper_21 + 0.5*helper_5;
+    double helper_44 = 0.5*helper_26 + 0.5*helper_28;
+    double helper_45 = 0.5*helper_10 + 0.5*helper_12;
+    double helper_46 = 0.666666666666667*(helper_1*(-1.5*helper_1 + 0.5*helper_2 + helper_44) + helper_10*(-1.5*helper_10 + 0.5*helper_12 + 0.5*helper_14 + 0.5*helper_8) + helper_12*(0.5*helper_10 - 1.5*helper_12 + 0.5*helper_14 + 0.5*helper_8) + helper_14*(-1.5*helper_14 + helper_45 + 0.5*helper_8) + helper_2*(0.5*helper_1 - 1.5*helper_2 + helper_44) + helper_21*(-1.5*helper_21 + 0.5*helper_4 + 0.5*helper_5 + 0.5*helper_6) + helper_26*(0.5*helper_1 + 0.5*helper_2 - 1.5*helper_26 + 0.5*helper_28) + helper_28*(0.5*helper_1 + 0.5*helper_2 + 0.5*helper_26 - 1.5*helper_28) + helper_4*(-1.5*helper_4 + helper_43 + 0.5*helper_6) + helper_5*(0.5*helper_21 + 0.5*helper_4 - 1.5*helper_5 + 0.5*helper_6) + helper_6*(0.5*helper_4 + helper_43 - 1.5*helper_6) + helper_8*(0.5*helper_14 + helper_45 - 1.5*helper_8))/helper_39;
+    double helper_47 = -0.707106781186548*helper_21 + 0.707106781186548*helper_5;
     result_0[0] = -helper_40*(1.0*helper_21 - 3.0*helper_4 + helper_46*(helper_41*(-helper_1 + helper_2) - helper_42*(helper_14 - helper_8) - (-helper_17 + helper_18 - helper_19)*(-helper_25 - helper_27 + helper_29 - helper_30) + (-helper_33 + helper_34 - helper_35)*(-helper_11 + helper_13 - helper_15 - helper_9)) + 1.0*helper_5 + 1.0*helper_6);
     result_0[1] = helper_40*(3.0*helper_1 - 1.0*helper_2 - 1.0*helper_26 - 1.0*helper_28 + helper_46*(helper_23 + helper_24*helper_47 - helper_38*helper_41));
     result_0[2] = helper_40*(-1.0*helper_10 - 1.0*helper_12 - 1.0*helper_14 + helper_46*(-helper_3*helper_47 - helper_32 + helper_37 + helper_38*helper_42) + 3.0*helper_8);
 }
 
-void floatTetWild::AMIPS_hessian(const std::array<Scalar, 12>& T, Matrix3& result_0){
-    Scalar helper_0[12];
+void floatTetWild::AMIPS_hessian(const std::array<Scalar, 12>& T, Eigen::Matrix<double, 3, 3>& result_0){
+    double helper_0[12];
     helper_0[0] = T[0];
     helper_0[1] = T[1];
     helper_0[2] = T[2];
@@ -1324,125 +1324,125 @@ void floatTetWild::AMIPS_hessian(const std::array<Scalar, 12>& T, Matrix3& resul
     helper_0[9] = T[9];
     helper_0[10] = T[10];
     helper_0[11] = T[11];
-    Scalar helper_1 = helper_0[2];
-    Scalar helper_2 = helper_0[11];
-    Scalar helper_3 = helper_1 - helper_2;
-    Scalar helper_4 = helper_0[0];
-    Scalar helper_5 = 0.577350269189626*helper_4;
-    Scalar helper_6 = helper_0[3];
-    Scalar helper_7 = 1.15470053837925*helper_6;
-    Scalar helper_8 = helper_0[9];
-    Scalar helper_9 = 0.577350269189626*helper_8;
-    Scalar helper_10 = helper_5 - helper_7 + helper_9;
-    Scalar helper_11 = helper_0[1];
-    Scalar helper_12 = 0.408248290463863*helper_11;
-    Scalar helper_13 = helper_0[4];
-    Scalar helper_14 = 0.408248290463863*helper_13;
-    Scalar helper_15 = helper_0[7];
-    Scalar helper_16 = 1.22474487139159*helper_15;
-    Scalar helper_17 = helper_0[10];
-    Scalar helper_18 = 0.408248290463863*helper_17;
-    Scalar helper_19 = helper_12 + helper_14 - helper_16 + helper_18;
-    Scalar helper_20 = helper_10*helper_19;
-    Scalar helper_21 = 0.577350269189626*helper_11;
-    Scalar helper_22 = 1.15470053837925*helper_13;
-    Scalar helper_23 = 0.577350269189626*helper_17;
-    Scalar helper_24 = helper_21 - helper_22 + helper_23;
-    Scalar helper_25 = 0.408248290463863*helper_4;
-    Scalar helper_26 = 0.408248290463863*helper_6;
-    Scalar helper_27 = helper_0[6];
-    Scalar helper_28 = 1.22474487139159*helper_27;
-    Scalar helper_29 = 0.408248290463863*helper_8;
-    Scalar helper_30 = helper_25 + helper_26 - helper_28 + helper_29;
-    Scalar helper_31 = helper_24*helper_30;
-    Scalar helper_32 = helper_3*(helper_20 - helper_31);
-    Scalar helper_33 = helper_4 - helper_8;
-    Scalar helper_34 = 0.408248290463863*helper_1;
-    Scalar helper_35 = helper_0[5];
-    Scalar helper_36 = 0.408248290463863*helper_35;
-    Scalar helper_37 = helper_0[8];
-    Scalar helper_38 = 1.22474487139159*helper_37;
-    Scalar helper_39 = 0.408248290463863*helper_2;
-    Scalar helper_40 = helper_34 + helper_36 - helper_38 + helper_39;
-    Scalar helper_41 = helper_24*helper_40;
-    Scalar helper_42 = 0.577350269189626*helper_1;
-    Scalar helper_43 = 1.15470053837925*helper_35;
-    Scalar helper_44 = 0.577350269189626*helper_2;
-    Scalar helper_45 = helper_42 - helper_43 + helper_44;
-    Scalar helper_46 = helper_19*helper_45;
-    Scalar helper_47 = helper_41 - helper_46;
-    Scalar helper_48 = helper_33*helper_47;
-    Scalar helper_49 = helper_11 - helper_17;
-    Scalar helper_50 = helper_10*helper_40;
-    Scalar helper_51 = helper_30*helper_45;
-    Scalar helper_52 = helper_50 - helper_51;
-    Scalar helper_53 = helper_49*helper_52;
-    Scalar helper_54 = helper_32 + helper_48 - helper_53;
-    Scalar helper_55 = pow(helper_54, 2);
-    Scalar helper_56 = pow(helper_55, -0.333333333333333);
-    Scalar helper_57 = 1.0*helper_27 - 3.0*helper_4 + 1.0*helper_6 + 1.0*helper_8;
-    Scalar helper_58 = 0.707106781186548*helper_13;
-    Scalar helper_59 = 0.707106781186548*helper_15;
-    Scalar helper_60 = helper_58 - helper_59;
-    Scalar helper_61 = helper_3*helper_60;
-    Scalar helper_62 = 0.707106781186548*helper_35 - 0.707106781186548*helper_37;
-    Scalar helper_63 = helper_49*helper_62;
-    Scalar helper_64 = helper_47 + helper_61 - helper_63;
-    Scalar helper_65 = 1.33333333333333/helper_54;
-    Scalar helper_66 = 1.0/helper_55;
-    Scalar helper_67 = 0.5*helper_27 + 0.5*helper_6;
-    Scalar helper_68 = -1.5*helper_4 + helper_67 + 0.5*helper_8;
-    Scalar helper_69 = 0.5*helper_4 + helper_67 - 1.5*helper_8;
-    Scalar helper_70 = -1.5*helper_27 + 0.5*helper_4 + 0.5*helper_6 + 0.5*helper_8;
-    Scalar helper_71 = 0.5*helper_27 + 0.5*helper_4 - 1.5*helper_6 + 0.5*helper_8;
-    Scalar helper_72 = 0.5*helper_13 + 0.5*helper_15;
-    Scalar helper_73 = -1.5*helper_11 + 0.5*helper_17 + helper_72;
-    Scalar helper_74 = 0.5*helper_11 - 1.5*helper_17 + helper_72;
-    Scalar helper_75 = 0.5*helper_11 + 0.5*helper_13 - 1.5*helper_15 + 0.5*helper_17;
-    Scalar helper_76 = 0.5*helper_11 - 1.5*helper_13 + 0.5*helper_15 + 0.5*helper_17;
-    Scalar helper_77 = 0.5*helper_35 + 0.5*helper_37;
-    Scalar helper_78 = -1.5*helper_1 + 0.5*helper_2 + helper_77;
-    Scalar helper_79 = 0.5*helper_1 - 1.5*helper_2 + helper_77;
-    Scalar helper_80 = 0.5*helper_1 + 0.5*helper_2 + 0.5*helper_35 - 1.5*helper_37;
-    Scalar helper_81 = 0.5*helper_1 + 0.5*helper_2 - 1.5*helper_35 + 0.5*helper_37;
-    Scalar helper_82 = helper_1*helper_78 + helper_11*helper_73 + helper_13*helper_76 + helper_15*helper_75 + helper_17*helper_74 + helper_2*helper_79 + helper_27*helper_70 + helper_35*helper_81 + helper_37*helper_80 + helper_4*helper_68 + helper_6*helper_71 + helper_69*helper_8;
-    Scalar helper_83 = 0.444444444444444*helper_66*helper_82;
-    Scalar helper_84 = helper_66*helper_82;
-    Scalar helper_85 = -helper_32 - helper_48 + helper_53;
-    Scalar helper_86 = 1.0/helper_85;
-    Scalar helper_87 = helper_86*pow(pow(helper_85, 2), -0.333333333333333);
-    Scalar helper_88 = 0.707106781186548*helper_6;
-    Scalar helper_89 = 0.707106781186548*helper_27;
-    Scalar helper_90 = helper_88 - helper_89;
-    Scalar helper_91 = 0.666666666666667*helper_10*helper_40 + 0.666666666666667*helper_3*helper_90 - 0.666666666666667*helper_30*helper_45 - 0.666666666666667*helper_33*helper_62;
-    Scalar helper_92 = -3.0*helper_11 + 1.0*helper_13 + 1.0*helper_15 + 1.0*helper_17;
-    Scalar helper_93 = -helper_11 + helper_17;
-    Scalar helper_94 = -helper_1 + helper_2;
-    Scalar helper_95 = -helper_21 + helper_22 - helper_23;
-    Scalar helper_96 = -helper_34 - helper_36 + helper_38 - helper_39;
-    Scalar helper_97 = -helper_42 + helper_43 - helper_44;
-    Scalar helper_98 = -helper_12 - helper_14 + helper_16 - helper_18;
-    Scalar helper_99 = -0.666666666666667*helper_60*helper_94 + 0.666666666666667*helper_62*helper_93 + 0.666666666666667*helper_95*helper_96 - 0.666666666666667*helper_97*helper_98;
-    Scalar helper_100 = helper_3*helper_90;
-    Scalar helper_101 = helper_33*helper_62;
-    Scalar helper_102 = helper_100 - helper_101 + helper_52;
-    Scalar helper_103 = -helper_60*helper_94 + helper_62*helper_93 + helper_95*helper_96 - helper_97*helper_98;
-    Scalar helper_104 = 0.444444444444444*helper_102*helper_103*helper_82*helper_86 + helper_57*helper_91 - helper_92*helper_99;
-    Scalar helper_105 = 1.85037170770859e-17*helper_1*helper_78 + 1.85037170770859e-17*helper_11*helper_73 + 1.85037170770859e-17*helper_13*helper_76 + 1.85037170770859e-17*helper_15*helper_75 + 1.85037170770859e-17*helper_17*helper_74 + 1.85037170770859e-17*helper_2*helper_79 + 1.85037170770859e-17*helper_27*helper_70 + 1.85037170770859e-17*helper_35*helper_81 + 1.85037170770859e-17*helper_37*helper_80 + 1.85037170770859e-17*helper_4*helper_68 + 1.85037170770859e-17*helper_6*helper_71 + 1.85037170770859e-17*helper_69*helper_8;
-    Scalar helper_106 = helper_64*helper_82*helper_86;
-    Scalar helper_107 = -0.666666666666667*helper_10*helper_19 + 0.666666666666667*helper_24*helper_30 + 0.666666666666667*helper_33*helper_60 - 0.666666666666667*helper_49*helper_90;
-    Scalar helper_108 = -3.0*helper_1 + 1.0*helper_2 + 1.0*helper_35 + 1.0*helper_37;
-    Scalar helper_109 = -helper_20 + helper_31 + helper_33*helper_60 - helper_49*helper_90;
-    Scalar helper_110 = 0.444444444444444*helper_109*helper_82*helper_86;
-    Scalar helper_111 = helper_103*helper_110 + helper_107*helper_57 - helper_108*helper_99;
-    Scalar helper_112 = -helper_4 + helper_8;
-    Scalar helper_113 = -helper_88 + helper_89;
-    Scalar helper_114 = -helper_5 + helper_7 - helper_9;
-    Scalar helper_115 = -helper_25 - helper_26 + helper_28 - helper_29;
-    Scalar helper_116 = helper_82*helper_86*(helper_112*helper_62 + helper_113*helper_94 + helper_114*helper_96 - helper_115*helper_97);
-    Scalar helper_117 = -helper_100 + helper_101 - helper_50 + helper_51;
-    Scalar helper_118 = -helper_102*helper_110 + helper_107*helper_92 + helper_108*helper_91;
-    Scalar helper_119 = helper_82*helper_86*(helper_112*(-helper_58 + helper_59) - helper_113*helper_93 - helper_114*helper_98 + helper_115*helper_95);
+    double helper_1 = helper_0[2];
+    double helper_2 = helper_0[11];
+    double helper_3 = helper_1 - helper_2;
+    double helper_4 = helper_0[0];
+    double helper_5 = 0.577350269189626*helper_4;
+    double helper_6 = helper_0[3];
+    double helper_7 = 1.15470053837925*helper_6;
+    double helper_8 = helper_0[9];
+    double helper_9 = 0.577350269189626*helper_8;
+    double helper_10 = helper_5 - helper_7 + helper_9;
+    double helper_11 = helper_0[1];
+    double helper_12 = 0.408248290463863*helper_11;
+    double helper_13 = helper_0[4];
+    double helper_14 = 0.408248290463863*helper_13;
+    double helper_15 = helper_0[7];
+    double helper_16 = 1.22474487139159*helper_15;
+    double helper_17 = helper_0[10];
+    double helper_18 = 0.408248290463863*helper_17;
+    double helper_19 = helper_12 + helper_14 - helper_16 + helper_18;
+    double helper_20 = helper_10*helper_19;
+    double helper_21 = 0.577350269189626*helper_11;
+    double helper_22 = 1.15470053837925*helper_13;
+    double helper_23 = 0.577350269189626*helper_17;
+    double helper_24 = helper_21 - helper_22 + helper_23;
+    double helper_25 = 0.408248290463863*helper_4;
+    double helper_26 = 0.408248290463863*helper_6;
+    double helper_27 = helper_0[6];
+    double helper_28 = 1.22474487139159*helper_27;
+    double helper_29 = 0.408248290463863*helper_8;
+    double helper_30 = helper_25 + helper_26 - helper_28 + helper_29;
+    double helper_31 = helper_24*helper_30;
+    double helper_32 = helper_3*(helper_20 - helper_31);
+    double helper_33 = helper_4 - helper_8;
+    double helper_34 = 0.408248290463863*helper_1;
+    double helper_35 = helper_0[5];
+    double helper_36 = 0.408248290463863*helper_35;
+    double helper_37 = helper_0[8];
+    double helper_38 = 1.22474487139159*helper_37;
+    double helper_39 = 0.408248290463863*helper_2;
+    double helper_40 = helper_34 + helper_36 - helper_38 + helper_39;
+    double helper_41 = helper_24*helper_40;
+    double helper_42 = 0.577350269189626*helper_1;
+    double helper_43 = 1.15470053837925*helper_35;
+    double helper_44 = 0.577350269189626*helper_2;
+    double helper_45 = helper_42 - helper_43 + helper_44;
+    double helper_46 = helper_19*helper_45;
+    double helper_47 = helper_41 - helper_46;
+    double helper_48 = helper_33*helper_47;
+    double helper_49 = helper_11 - helper_17;
+    double helper_50 = helper_10*helper_40;
+    double helper_51 = helper_30*helper_45;
+    double helper_52 = helper_50 - helper_51;
+    double helper_53 = helper_49*helper_52;
+    double helper_54 = helper_32 + helper_48 - helper_53;
+    double helper_55 = pow(helper_54, 2);
+    double helper_56 = pow(helper_55, -0.333333333333333);
+    double helper_57 = 1.0*helper_27 - 3.0*helper_4 + 1.0*helper_6 + 1.0*helper_8;
+    double helper_58 = 0.707106781186548*helper_13;
+    double helper_59 = 0.707106781186548*helper_15;
+    double helper_60 = helper_58 - helper_59;
+    double helper_61 = helper_3*helper_60;
+    double helper_62 = 0.707106781186548*helper_35 - 0.707106781186548*helper_37;
+    double helper_63 = helper_49*helper_62;
+    double helper_64 = helper_47 + helper_61 - helper_63;
+    double helper_65 = 1.33333333333333/helper_54;
+    double helper_66 = 1.0/helper_55;
+    double helper_67 = 0.5*helper_27 + 0.5*helper_6;
+    double helper_68 = -1.5*helper_4 + helper_67 + 0.5*helper_8;
+    double helper_69 = 0.5*helper_4 + helper_67 - 1.5*helper_8;
+    double helper_70 = -1.5*helper_27 + 0.5*helper_4 + 0.5*helper_6 + 0.5*helper_8;
+    double helper_71 = 0.5*helper_27 + 0.5*helper_4 - 1.5*helper_6 + 0.5*helper_8;
+    double helper_72 = 0.5*helper_13 + 0.5*helper_15;
+    double helper_73 = -1.5*helper_11 + 0.5*helper_17 + helper_72;
+    double helper_74 = 0.5*helper_11 - 1.5*helper_17 + helper_72;
+    double helper_75 = 0.5*helper_11 + 0.5*helper_13 - 1.5*helper_15 + 0.5*helper_17;
+    double helper_76 = 0.5*helper_11 - 1.5*helper_13 + 0.5*helper_15 + 0.5*helper_17;
+    double helper_77 = 0.5*helper_35 + 0.5*helper_37;
+    double helper_78 = -1.5*helper_1 + 0.5*helper_2 + helper_77;
+    double helper_79 = 0.5*helper_1 - 1.5*helper_2 + helper_77;
+    double helper_80 = 0.5*helper_1 + 0.5*helper_2 + 0.5*helper_35 - 1.5*helper_37;
+    double helper_81 = 0.5*helper_1 + 0.5*helper_2 - 1.5*helper_35 + 0.5*helper_37;
+    double helper_82 = helper_1*helper_78 + helper_11*helper_73 + helper_13*helper_76 + helper_15*helper_75 + helper_17*helper_74 + helper_2*helper_79 + helper_27*helper_70 + helper_35*helper_81 + helper_37*helper_80 + helper_4*helper_68 + helper_6*helper_71 + helper_69*helper_8;
+    double helper_83 = 0.444444444444444*helper_66*helper_82;
+    double helper_84 = helper_66*helper_82;
+    double helper_85 = -helper_32 - helper_48 + helper_53;
+    double helper_86 = 1.0/helper_85;
+    double helper_87 = helper_86*pow(pow(helper_85, 2), -0.333333333333333);
+    double helper_88 = 0.707106781186548*helper_6;
+    double helper_89 = 0.707106781186548*helper_27;
+    double helper_90 = helper_88 - helper_89;
+    double helper_91 = 0.666666666666667*helper_10*helper_40 + 0.666666666666667*helper_3*helper_90 - 0.666666666666667*helper_30*helper_45 - 0.666666666666667*helper_33*helper_62;
+    double helper_92 = -3.0*helper_11 + 1.0*helper_13 + 1.0*helper_15 + 1.0*helper_17;
+    double helper_93 = -helper_11 + helper_17;
+    double helper_94 = -helper_1 + helper_2;
+    double helper_95 = -helper_21 + helper_22 - helper_23;
+    double helper_96 = -helper_34 - helper_36 + helper_38 - helper_39;
+    double helper_97 = -helper_42 + helper_43 - helper_44;
+    double helper_98 = -helper_12 - helper_14 + helper_16 - helper_18;
+    double helper_99 = -0.666666666666667*helper_60*helper_94 + 0.666666666666667*helper_62*helper_93 + 0.666666666666667*helper_95*helper_96 - 0.666666666666667*helper_97*helper_98;
+    double helper_100 = helper_3*helper_90;
+    double helper_101 = helper_33*helper_62;
+    double helper_102 = helper_100 - helper_101 + helper_52;
+    double helper_103 = -helper_60*helper_94 + helper_62*helper_93 + helper_95*helper_96 - helper_97*helper_98;
+    double helper_104 = 0.444444444444444*helper_102*helper_103*helper_82*helper_86 + helper_57*helper_91 - helper_92*helper_99;
+    double helper_105 = 1.85037170770859e-17*helper_1*helper_78 + 1.85037170770859e-17*helper_11*helper_73 + 1.85037170770859e-17*helper_13*helper_76 + 1.85037170770859e-17*helper_15*helper_75 + 1.85037170770859e-17*helper_17*helper_74 + 1.85037170770859e-17*helper_2*helper_79 + 1.85037170770859e-17*helper_27*helper_70 + 1.85037170770859e-17*helper_35*helper_81 + 1.85037170770859e-17*helper_37*helper_80 + 1.85037170770859e-17*helper_4*helper_68 + 1.85037170770859e-17*helper_6*helper_71 + 1.85037170770859e-17*helper_69*helper_8;
+    double helper_106 = helper_64*helper_82*helper_86;
+    double helper_107 = -0.666666666666667*helper_10*helper_19 + 0.666666666666667*helper_24*helper_30 + 0.666666666666667*helper_33*helper_60 - 0.666666666666667*helper_49*helper_90;
+    double helper_108 = -3.0*helper_1 + 1.0*helper_2 + 1.0*helper_35 + 1.0*helper_37;
+    double helper_109 = -helper_20 + helper_31 + helper_33*helper_60 - helper_49*helper_90;
+    double helper_110 = 0.444444444444444*helper_109*helper_82*helper_86;
+    double helper_111 = helper_103*helper_110 + helper_107*helper_57 - helper_108*helper_99;
+    double helper_112 = -helper_4 + helper_8;
+    double helper_113 = -helper_88 + helper_89;
+    double helper_114 = -helper_5 + helper_7 - helper_9;
+    double helper_115 = -helper_25 - helper_26 + helper_28 - helper_29;
+    double helper_116 = helper_82*helper_86*(helper_112*helper_62 + helper_113*helper_94 + helper_114*helper_96 - helper_115*helper_97);
+    double helper_117 = -helper_100 + helper_101 - helper_50 + helper_51;
+    double helper_118 = -helper_102*helper_110 + helper_107*helper_92 + helper_108*helper_91;
+    double helper_119 = helper_82*helper_86*(helper_112*(-helper_58 + helper_59) - helper_113*helper_93 - helper_114*helper_98 + helper_115*helper_95);
     result_0(0, 0) = helper_56*(helper_57*helper_64*helper_65 - pow(helper_64, 2)*helper_83 + 0.666666666666667*helper_64*helper_84*(-helper_41 + helper_46 - helper_61 + helper_63) + 3.0);
     result_0(0, 1) = helper_87*(helper_104 - helper_105*helper_35 + helper_106*helper_91);
     result_0(0, 2) = helper_87*(helper_106*helper_107 + helper_111);

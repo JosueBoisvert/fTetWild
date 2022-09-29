@@ -13,35 +13,36 @@
 #ifndef FLOATTETWILD_TRIANGLEINSERTION_H
 #define FLOATTETWILD_TRIANGLEINSERTION_H
 
-#include <floattetwild/Mesh.hpp>
+//#include <floattetwild/Mesh.hpp>
+#include "ftetwild.hpp"
 #include <floattetwild/AABBWrapper.h>
 #include <floattetwild/CutMesh.h>
 
 #include <floattetwild/Rational.h>
 namespace floatTetWild {
     void match_surface_fs(const Mesh &mesh,
-                          const std::vector<Vector3> &input_vertices, const std::vector<Vector3i> &input_faces,
+                          const std::vector<Eigen::Matrix<double, 3, 1>> &input_vertices, const std::vector<Eigen::Matrix<int, 3, 1>> &input_faces,
                           std::vector<bool> &is_face_inserted,
                           std::vector<std::array<std::vector<int>, 4>> &track_surface_fs);
 
-    void insert_triangles(const std::vector<Vector3> &input_vertices, const std::vector<Vector3i> &input_faces,
+    void insert_triangles(const std::vector<Eigen::Matrix<double, 3, 1>> &input_vertices, const std::vector<Eigen::Matrix<int, 3, 1>> &input_faces,
                           const std::vector<int> &input_tags, Mesh &mesh,
                           std::vector<bool> &is_face_inserted, AABBWrapper &tree, bool is_again);
 
-    void insert_triangles_aux(const std::vector<Vector3> &input_vertices, const std::vector<Vector3i> &input_faces,
+    void insert_triangles_aux(const std::vector<Eigen::Matrix<double, 3, 1>> &input_vertices, const std::vector<Eigen::Matrix<int, 3, 1>> &input_faces,
                               const std::vector<int> &input_tags, Mesh &mesh,
                               std::vector<bool> &is_face_inserted, AABBWrapper &tree, bool is_again);
 
-    void optimize_non_surface(const std::vector<Vector3> &input_vertices, const std::vector<Vector3i> &input_faces,
+    void optimize_non_surface(const std::vector<Eigen::Matrix<double, 3, 1>> &input_vertices, const std::vector<Eigen::Matrix<int, 3, 1>> &input_faces,
                               const std::vector<int> &input_tags, std::vector<bool> &is_face_inserted,
                               const std::vector<std::array<std::vector<int>, 4 >> &track_surface_fs,
                               Mesh &mesh, AABBWrapper &tree, bool is_again);
 
-    void sort_input_faces(const std::vector<Vector3> &input_vertices, const std::vector<Vector3i> &input_faces,
+    void sort_input_faces(const std::vector<Eigen::Matrix<double, 3, 1>> &input_vertices, const std::vector<Eigen::Matrix<int, 3, 1>> &input_faces,
                           const Mesh &mesh, std::vector<int> &sorted_f_ids);
 
     void push_new_tets(Mesh &mesh, std::vector<std::array<std::vector<int>, 4>> &track_surface_fs,
-                       std::vector<Vector3> &points, std::vector<MeshTet> &new_tets,
+                       std::vector<Eigen::Matrix<double, 3, 1>> &points, std::vector<MeshTet> &new_tets,
                        std::vector<std::array<std::vector<int>, 4>> &new_track_surface_fs,
                        std::vector<int> &modified_t_ids, bool is_again);
 
@@ -49,23 +50,23 @@ namespace floatTetWild {
                                      std::vector<std::array<std::vector<int>, 4>> &track_surface_fs);
 
     ///face
-    bool insert_multi_triangles(int f_id, const std::vector<Vector3> &input_vertices,
-                               const std::vector<Vector3i> &input_faces, const std::vector<int> &input_tags,
+    bool insert_multi_triangles(int f_id, const std::vector<Eigen::Matrix<double, 3, 1>> &input_vertices,
+                               const std::vector<Eigen::Matrix<int, 3, 1>> &input_faces, const std::vector<int> &input_tags,
                                 const std::vector<std::vector<int>>& conn_fs,
-                                const std::vector<Vector3> &ns, std::vector<bool> & is_visited, std::vector<int>& f_ids,
+                                const std::vector<Eigen::Matrix<double, 3, 1>> &ns, std::vector<bool> & is_visited, std::vector<int>& f_ids,
                                Mesh &mesh, std::vector<std::array<std::vector<int>, 4>> &track_surface_fs,
                                AABBWrapper &tree, bool is_again);
 
-    bool insert_one_triangle(int f_id, const std::vector<Vector3> &input_vertices,
-                             const std::vector<Vector3i> &input_faces, const std::vector<int> &input_tags,
+    bool insert_one_triangle(int f_id, const std::vector<Eigen::Matrix<double, 3, 1>> &input_vertices,
+                             const std::vector<Eigen::Matrix<int, 3, 1>> &input_faces, const std::vector<int> &input_tags,
                              Mesh &mesh, std::vector<std::array<std::vector<int>, 4>> &track_surface_fs,
                              AABBWrapper &tree, bool is_again);
 
     void
-    find_cutting_tets(int f_id, const std::vector<Vector3> &input_vertices, const std::vector<Vector3i> &input_faces,
-                      const std::array<Vector3, 3> &vs, Mesh &mesh, std::vector<int> &result, bool is_again);
+    find_cutting_tets(int f_id, const std::vector<Eigen::Matrix<double, 3, 1>> &input_vertices, const std::vector<Eigen::Matrix<int, 3, 1>> &input_faces,
+                      const std::array<Eigen::Matrix<double, 3, 1>, 3> &vs, Mesh &mesh, std::vector<int> &result, bool is_again);
 
-    bool subdivide_tets(int insert_f_id, Mesh &mesh, CutMesh &cut_mesh, std::vector<Vector3> &points,
+    bool subdivide_tets(int insert_f_id, Mesh &mesh, CutMesh &cut_mesh, std::vector<Eigen::Matrix<double, 3, 1>> &points,
                         std::map<std::array<int, 2>, int> &map_edge_to_intersecting_point,
                         std::vector<std::array<std::vector<int>, 4>> &track_surface_fs,
                         std::vector<int> &subdivide_t_ids, std::vector<bool> &is_mark_surface,
@@ -76,13 +77,13 @@ namespace floatTetWild {
     void pair_track_surface_fs(Mesh &mesh, std::vector<std::array<std::vector<int>, 4>> &track_surface_fs);
 
     ///edge
-    void find_boundary_edges(const std::vector<Vector3> &input_vertices, const std::vector<Vector3i> &input_faces,
+    void find_boundary_edges(const std::vector<Eigen::Matrix<double, 3, 1>> &input_vertices, const std::vector<Eigen::Matrix<int, 3, 1>> &input_faces,
                              const std::vector<bool> &is_face_inserted, const std::vector<bool> &old_is_face_inserted,
                              std::vector<std::pair<std::array<int, 2>, std::vector<int>>> &b_edge_infos,
                              std::vector<bool> &is_on_cut_edges,
                              std::vector<std::array<int, 2>> &b_edges);
 
-    bool insert_boundary_edges(const std::vector<Vector3> &input_vertices, const std::vector<Vector3i> &input_faces,
+    bool insert_boundary_edges(const std::vector<Eigen::Matrix<double, 3, 1>> &input_vertices, const std::vector<Eigen::Matrix<int, 3, 1>> &input_faces,
                                std::vector<std::pair<std::array<int, 2>, std::vector<int>>> &b_edge_infos,
                                std::vector<bool> &is_on_cut_edges,
                                std::vector<std::array<std::vector<int>, 4>> &track_surface_fs, Mesh &mesh,
@@ -93,18 +94,18 @@ namespace floatTetWild {
 
     bool insert_boundary_edges_get_intersecting_edges_and_points(
             const std::vector<std::vector<std::pair<int, int>>> &covered_fs_infos,
-            const std::vector<Vector3> &input_vertices, const std::vector<Vector3i> &input_faces,
+            const std::vector<Eigen::Matrix<double, 3, 1>> &input_vertices, const std::vector<Eigen::Matrix<int, 3, 1>> &input_faces,
             const std::array<int, 2> &e, const std::vector<int> &n_f_ids,
             std::vector<std::array<std::vector<int>, 4>> &track_surface_fs, Mesh &mesh,
-            std::vector<Vector3> &points, std::map<std::array<int, 2>, int> &map_edge_to_intersecting_point,
+            std::vector<Eigen::Matrix<double, 3, 1>> &points, std::map<std::array<int, 2>, int> &map_edge_to_intersecting_point,
             std::vector<int> &snapped_v_ids, std::vector<std::array<int, 3>> &cut_fs,
             bool is_again);
 
     ///other
-    bool is_uninserted_face_covered(int uninserted_f_id, const std::vector<Vector3> &input_vertices, const std::vector<Vector3i> &input_faces,
+    bool is_uninserted_face_covered(int uninserted_f_id, const std::vector<Eigen::Matrix<double, 3, 1>> &input_vertices, const std::vector<Eigen::Matrix<int, 3, 1>> &input_faces,
                                     const std::vector<int>& cut_t_ids, Mesh &mesh);
 
-    void mark_surface_fs(const std::vector<Vector3> &input_vertices, const std::vector<Vector3i> &input_faces,
+    void mark_surface_fs(const std::vector<Eigen::Matrix<double, 3, 1>> &input_vertices, const std::vector<Eigen::Matrix<int, 3, 1>> &input_faces,
                          const std::vector<int> &input_tags,
                          std::vector<std::array<std::vector<int>, 4>> &track_surface_fs,
                          const std::vector<bool> &is_face_inserted,
@@ -118,14 +119,14 @@ namespace floatTetWild {
     void myassert(bool b, const std::string &s);
 
     void check_track_surface_fs(Mesh &mesh, std::vector<std::array<std::vector<int>, 4>> &track_surface_fs,
-                                const std::vector<Vector3> &input_vertices, const std::vector<Vector3i> &input_faces,
+                                const std::vector<Eigen::Matrix<double, 3, 1>> &input_vertices, const std::vector<Eigen::Matrix<int, 3, 1>> &input_faces,
                                 const std::vector<int> &sorted_f_ids);
-    Vector3 get_normal(const Vector3& a, const Vector3& b, const Vector3& c);
+    Eigen::Matrix<double, 3, 1> get_normal(const Eigen::Matrix<double, 3, 1>& a, const Eigen::Matrix<double, 3, 1>& b, const Eigen::Matrix<double, 3, 1>& c);
 
     //fortest
-    typedef Eigen::Matrix<triwild::Rational, 3, 1> Vector3_r;
+    typedef Eigen::Matrix<triwild::Rational, 3, 1> Eigen::Matrix<double, 3, 1>_r;
 
-    int orient_rational(const Vector3_r &p1, const Vector3_r &p2, const Vector3_r &p3, const Vector3_r &p);
+    int orient_rational(const Eigen::Matrix<double, 3, 1>_r &p1, const Eigen::Matrix<double, 3, 1>_r &p2, const Eigen::Matrix<double, 3, 1>_r &p3, const Eigen::Matrix<double, 3, 1>_r &p);
 }
 
 

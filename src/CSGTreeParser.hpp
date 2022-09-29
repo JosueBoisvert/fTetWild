@@ -22,7 +22,7 @@ namespace floatTetWild {
 class CSGTreeParser
 {
     public:
-    static void get_meshes(const json &csg_tree, std::vector<std::string> &meshes, json &csg_tree_with_ids)
+    static void get_meshes(const nlohmann::json &csg_tree, std::vector<std::string> &meshes, nlohmann::json &csg_tree_with_ids)
     {
         int index = 0;
         meshes.clear();
@@ -32,21 +32,21 @@ class CSGTreeParser
         get_meshes_aux(csg_tree, meshes, existings, index, csg_tree_with_ids);
     }
 
-    static int get_max_id(const json &csg_tree_with_ids) {
+    static int get_max_id(const nlohmann::json &csg_tree_with_ids) {
         int max = -1;
         get_max_id_aux(csg_tree_with_ids, max);
 
         return max;
     }
 
-    static bool keep_tet(const json &csg_tree_with_ids, const int t_id, const std::vector<Eigen::VectorXd> &w);
+    static bool keep_tet(const nlohmann::json &csg_tree_with_ids, const int t_id, const std::vector<Eigen::VectorXd> &w);
 
-    static bool load_and_merge(const std::vector<std::string> &meshes, std::vector<Vector3> &V, std::vector<Vector3i> &F, GEO::Mesh &sf_mesh, std::vector<int> &tags);
-    static void merge(const std::vector<std::vector<Vector3>> &Vs, const std::vector<std::vector<Vector3i>> &Fs, std::vector<Vector3> &V, std::vector<Vector3i> &F, GEO::Mesh &sf_mesh, std::vector<int> &tags);
+    static bool load_and_merge(const std::vector<std::string> &meshes, std::vector<Eigen::Matrix<double, 3, 1>> &V, std::vector<Eigen::Matrix<int, 3, 1>> &F, GEO::Mesh &sf_mesh, std::vector<int> &tags);
+    static void merge(const std::vector<std::vector<Eigen::Matrix<double, 3, 1>>> &Vs, const std::vector<std::vector<Eigen::Matrix<int, 3, 1>>> &Fs, std::vector<Eigen::Matrix<double, 3, 1>> &V, std::vector<Eigen::Matrix<int, 3, 1>> &F, GEO::Mesh &sf_mesh, std::vector<int> &tags);
 
     private:
-    static void get_meshes_aux(const json &csg_tree_node, std::vector<std::string> &meshes, std::map<std::string, int> &existings, int &index, json &current_node);
-    static void get_max_id_aux(const json &csg_tree_node, int &max);
+    static void get_meshes_aux(const nlohmann::json &csg_tree_node, std::vector<std::string> &meshes, std::map<std::string, int> &existings, int &index, nlohmann::json &current_node);
+    static void get_max_id_aux(const nlohmann::json &csg_tree_node, int &max);
 };
 
 }

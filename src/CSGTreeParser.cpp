@@ -13,7 +13,7 @@
 
 
 namespace floatTetWild {
-    void CSGTreeParser::get_meshes_aux(const json &csg_tree_node, std::vector<std::string> &meshes, std::map<std::string, int> &existings, int &index, json &current_node)
+    void CSGTreeParser::get_meshes_aux(const nlohmann::json &csg_tree_node, std::vector<std::string> &meshes, std::map<std::string, int> &existings, int &index, nlohmann::json &current_node)
     {
         current_node["operation"] = csg_tree_node["operation"];
         if(csg_tree_node["left"].is_string())
@@ -34,7 +34,7 @@ namespace floatTetWild {
         }
         else
         {
-            json left_node;
+            nlohmann::json left_node;
             get_meshes_aux(csg_tree_node["left"], meshes, existings, index, left_node);
             current_node["left"] = left_node;
         }
@@ -58,16 +58,16 @@ namespace floatTetWild {
         }
         else
         {
-            json right_node;
+            nlohmann::json right_node;
             get_meshes_aux(csg_tree_node["right"], meshes, existings, index, right_node);
             current_node["right"] = right_node;
         }
     }
 
-    bool CSGTreeParser::load_and_merge(const std::vector<std::string> &meshes, std::vector<Vector3> &V, std::vector<Vector3i> &F, GEO::Mesh &sf_mesh, std::vector<int> &tags)
+    bool CSGTreeParser::load_and_merge(const std::vector<std::string> &meshes, std::vector<Eigen::Matrix<double, 3, 1>> &V, std::vector<Eigen::Matrix<int, 3, 1>> &F, GEO::Mesh &sf_mesh, std::vector<int> &tags)
     {
-        std::vector<std::vector<Vector3>> Vs;
-        std::vector<std::vector<Vector3i>> Fs;
+        std::vector<std::vector<Eigen::Matrix<double, 3, 1>>> Vs;
+        std::vector<std::vector<Eigen::Matrix<int, 3, 1>>> Fs;
 
         Vs.resize(meshes.size());
         Fs.resize(meshes.size());
@@ -89,7 +89,7 @@ namespace floatTetWild {
 
     }
 
-    void CSGTreeParser::merge(const std::vector<std::vector<Vector3>> &Vs, const std::vector<std::vector<Vector3i>> &Fs, std::vector<Vector3> &V, std::vector<Vector3i> &F, GEO::Mesh &sf_mesh, std::vector<int> &tags)
+    void CSGTreeParser::merge(const std::vector<std::vector<Eigen::Matrix<double, 3, 1>>> &Vs, const std::vector<std::vector<Eigen::Matrix<int, 3, 1>>> &Fs, std::vector<Eigen::Matrix<double, 3, 1>> &V, std::vector<Eigen::Matrix<int, 3, 1>> &F, GEO::Mesh &sf_mesh, std::vector<int> &tags)
     {
         V.clear();
         F.clear();
@@ -103,7 +103,7 @@ namespace floatTetWild {
             const auto &ff = Fs[id];
 
             for(const auto fid : ff)
-                F.push_back(Vector3i(fid(0)+offset, fid(1)+offset, fid(2)+offset));
+                F.push_back(Eigen::Matrix<int, 3, 1>(fid(0)+offset, fid(1)+offset, fid(2)+offset));
 
             tags.insert(tags.begin()+size, Fs[id].size(), id);
             size+=Fs[id].size();
@@ -116,7 +116,7 @@ namespace floatTetWild {
 
     }
 
-    void CSGTreeParser::get_max_id_aux(const json &csg_tree_node, int &max)
+    void CSGTreeParser::get_max_id_aux(const nlohmann::json &csg_tree_node, int &max)
     {
         if(csg_tree_node["left"].is_number()){
             const int id = csg_tree_node["left"];
@@ -135,7 +135,7 @@ namespace floatTetWild {
     }
 
 
-    bool CSGTreeParser::keep_tet(const json &csg_tree_with_ids, const int t_id, const std::vector<Eigen::VectorXd> &w)
+    bool CSGTreeParser::keep_tet(const nlohmann::json &csg_tree_with_ids, const int t_id, const std::vector<Eigen::VectorXd> &w)
     {
         const std::string op = csg_tree_with_ids["operation"];
 

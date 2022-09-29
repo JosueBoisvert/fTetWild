@@ -8,7 +8,8 @@
 
 #pragma once
 
-#include <floattetwild/Mesh.hpp>
+//#include <floattetwild/Mesh.hpp>
+#include "ftetwild.hpp"
 #include <floattetwild/Types.hpp>
 
 namespace floatTetWild
@@ -16,10 +17,10 @@ namespace floatTetWild
 	class MeshIO
 	{
 	public:
-		static bool load_mesh(const std::string &path, std::vector<Vector3> &points, std::vector<Vector3i> &faces, GEO::Mesh& input, std::vector<int> &flags);
-		static void load_mesh(std::vector<Vector3>&  points, std::vector<Vector3i>& faces, GEO::Mesh& input, std::vector<int>& flags);
-		static void load_mesh(std::vector<Vector3>&  points, std::vector<Vector3i>& faces, GEO::Mesh& input, std::vector<int>& flags, std::vector<double>& epsr_flags);
-        static bool load_mesh(const std::string &path, std::vector<Vector3> &points, std::vector<Vector3i> &faces, GEO::Mesh& input,
+		static bool load_mesh(const std::string &path, std::vector<Eigen::Matrix<double, 3, 1>> &points, std::vector<Eigen::Matrix<int, 3, 1>> &faces, GEO::Mesh& input, std::vector<int> &flags);
+		static void load_mesh(std::vector<Eigen::Matrix<double, 3, 1>>&  points, std::vector<Eigen::Matrix<int, 3, 1>>& faces, GEO::Mesh& input, std::vector<int>& flags);
+		static void load_mesh(std::vector<Eigen::Matrix<double, 3, 1>>&  points, std::vector<Eigen::Matrix<int, 3, 1>>& faces, GEO::Mesh& input, std::vector<int>& flags, std::vector<double>& epsr_flags);
+        static bool load_mesh(const std::string &path, std::vector<Eigen::Matrix<double, 3, 1>> &points, std::vector<Eigen::Matrix<int, 3, 1>> &faces, GEO::Mesh& input,
                               std::vector<int> &flags, std::vector<double>& epsr_flags);
 
 		static void write_mesh(const std::string &path, const Mesh &mesh,
@@ -28,6 +29,6 @@ namespace floatTetWild
 		        const bool do_filter = true, const bool binary = true, const bool separate_components = false);
 		static void write_surface_mesh(const std::string &path, const Mesh &mesh, const bool only_interior=true);
 
-		static void extract_volume_mesh(const Mesh &mesh, MatrixXs &V, Eigen::MatrixXi &T, bool only_interior = true);
+		static void extract_volume_mesh(const Mesh &mesh, Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> &V, Eigen::MatrixXi &T, bool only_interior = true);
 	};
 }

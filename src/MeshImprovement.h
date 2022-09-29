@@ -9,29 +9,30 @@
 #ifndef FLOATTETWILD_MESHIMPROVEMENT_H
 #define FLOATTETWILD_MESHIMPROVEMENT_H
 
-#include <floattetwild/Mesh.hpp>
+//#include <floattetwild/Mesh.hpp>
+#include "ftetwild.hpp"
 #include <floattetwild/AABBWrapper.h>
 #include <floattetwild/Types.hpp>
 
 namespace floatTetWild {
     void init(Mesh &mesh, AABBWrapper& tree);
-    void optimization(const std::vector<Vector3> &input_vertices, const std::vector<Vector3i> &input_faces, const std::vector<int> &input_tags, std::vector<bool> &is_face_inserted,
+    void optimization(const std::vector<Eigen::Matrix<double, 3, 1>> &input_vertices, const std::vector<Eigen::Matrix<int, 3, 1>> &input_faces, const std::vector<int> &input_tags, std::vector<bool> &is_face_inserted,
             Mesh &mesh, AABBWrapper& tree, const std::array<int, 4> &ops = {{1, 1, 1, 1}});
     void cleanup_empty_slots(Mesh &mesh, double percentage = 0.7);
-    void operation(const std::vector<Vector3> &input_vertices, const std::vector<Vector3i> &input_faces, const std::vector<int> &input_tags, std::vector<bool> &is_face_inserted,
+    void operation(const std::vector<Eigen::Matrix<double, 3, 1>> &input_vertices, const std::vector<Eigen::Matrix<int, 3, 1>> &input_faces, const std::vector<int> &input_tags, std::vector<bool> &is_face_inserted,
             Mesh &mesh, AABBWrapper& tree, const std::array<int, 5> &ops = {{1, 1, 1, 1, 1}});
     void operation(Mesh &mesh, AABBWrapper& tree, const std::array<int, 4> &ops = {{1, 1, 1, 1}});
-    bool update_scaling_field(Mesh &mesh, Scalar max_energy);
+    bool update_scaling_field(Mesh &mesh, double max_energy);
 
     int get_max_p(const Mesh &mesh);
 
     void correct_tracked_surface_orientation(Mesh &mesh, AABBWrapper& tree);
     void get_tracked_surface(Mesh& mesh, Eigen::Matrix<Scalar, Eigen::Dynamic, 3> &V, Eigen::Matrix<int, Eigen::Dynamic, 3> &F, int c_id = 0);
     void boolean_operation(Mesh& mesh, int op);
-    void boolean_operation(Mesh& mesh, const json& csg_tree_with_ids, const std::vector<std::string> &meshes);
-    void boolean_operation(Mesh& mesh, const json &csg_tree_with_ids, const std::vector<Eigen::VectorXd> &w);
-    void boolean_operation(Mesh& mesh, const json &csg_tree_with_ids);
-    void filter_outside(Mesh& mesh, const std::vector<Vector3> &input_vertices, const std::vector<Vector3i> &input_faces);
+    void boolean_operation(Mesh& mesh, const nlohmann::json& csg_tree_with_ids, const std::vector<std::string> &meshes);
+    void boolean_operation(Mesh& mesh, const nlohmann::json &csg_tree_with_ids, const std::vector<Eigen::VectorXd> &w);
+    void boolean_operation(Mesh& mesh, const nlohmann::json &csg_tree_with_ids);
+    void filter_outside(Mesh& mesh, const std::vector<Eigen::Matrix<double, 3, 1>> &input_vertices, const std::vector<Eigen::Matrix<int, 3, 1>> &input_faces);
     void filter_outside(Mesh& mesh, bool invert_faces = false);
     void filter_outside_floodfill(Mesh& mesh, bool invert_faces = false);
     void mark_outside(Mesh& mesh, bool invert_faces = false);

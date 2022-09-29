@@ -9,7 +9,8 @@
 #ifndef FLOATTETWILD_LOCALOPERATIONS_H
 #define FLOATTETWILD_LOCALOPERATIONS_H
 
-#include <floattetwild/Mesh.hpp>
+//#include <floattetwild/Mesh.hpp>
+#include "ftetwild.hpp"
 #include <floattetwild/AABBWrapper.h>
 
 namespace floatTetWild {
@@ -17,7 +18,7 @@ namespace floatTetWild {
     extern std::string envelope_log_csv;
     extern int envelope_log_csv_cnt;
 
-    // void init_b_tree(const std::vector<Vector3>& input_vertices, const std::vector<Vector3i>& input_faces, GEO::Mesh& b_mesh);
+    // void init_b_tree(const std::vector<Eigen::Matrix<double, 3, 1>>& input_vertices, const std::vector<Eigen::Matrix<int, 3, 1>>& input_faces, GEO::Mesh& b_mesh);
 
     int get_opp_t_id(const Mesh& mesh, int t_id, int j);
     void set_opp_t_id(Mesh& mesh, int t_id, int j);
@@ -30,34 +31,34 @@ namespace floatTetWild {
         return -1;
     }
 
-    inline GEO::vec3 to_geo_p(const Vector3& p){
+    inline GEO::vec3 to_geo_p(const Eigen::Matrix<double, 3, 1>& p){
         return GEO::vec3(p[0], p[1], p[2]);
     }
 
     void get_all_edges(const Mesh& mesh, std::vector<std::array<int, 2>>& edges);
     void get_all_edges(const Mesh& mesh, const std::vector<int>& t_ids, std::vector<std::array<int, 2>>& edges, bool skip_freezed = false);
 
-    Scalar get_edge_length(const Mesh& mesh, int v1_id, int v2_id);
-    Scalar get_edge_length_2(const Mesh& mesh, int v1_id, int v2_id);
+    double get_edge_length(const Mesh& mesh, int v1_id, int v2_id);
+    double get_edge_length_2(const Mesh& mesh, int v1_id, int v2_id);
 
-    Scalar get_quality(const Mesh& mesh, const MeshTet& t);
-    Scalar get_quality(const Mesh& mesh, int t_id);
-    Scalar get_quality(const MeshVertex& v0, const MeshVertex& v1, const MeshVertex& v2, const MeshVertex& v3);
-    Scalar get_quality(const Vector3& v0, const Vector3& v1, const Vector3& v2, const Vector3& v3);
+    double get_quality(const Mesh& mesh, const MeshTet& t);
+    double get_quality(const Mesh& mesh, int t_id);
+    double get_quality(const MeshVertex& v0, const MeshVertex& v1, const MeshVertex& v2, const MeshVertex& v3);
+    double get_quality(const Eigen::Matrix<double, 3, 1>& v0, const Eigen::Matrix<double, 3, 1>& v1, const Eigen::Matrix<double, 3, 1>& v2, const Eigen::Matrix<double, 3, 1>& v3);
     void get_max_avg_energy(const Mesh& mesh, Scalar& max_energy, Scalar& avg_energy);
-    Scalar get_mid_energy(const Mesh& mesh);
+    double get_mid_energy(const Mesh& mesh);
 
     bool is_inverted(const Mesh& mesh, int t_id);
-    bool is_inverted(const Mesh& mesh, int t_id, int j, const Vector3& new_p);
+    bool is_inverted(const Mesh& mesh, int t_id, int j, const Eigen::Matrix<double, 3, 1>& new_p);
     bool is_inverted(const MeshVertex& v0, const MeshVertex& v1, const MeshVertex& v2, const MeshVertex& v3);
-    bool is_inverted(const Vector3& v0, const Vector3& v1, const Vector3& v2, const Vector3& v3);
-    bool is_degenerate(const Vector3& v0, const Vector3& v1, const Vector3& v2, const Vector3& v3);
+    bool is_inverted(const Eigen::Matrix<double, 3, 1>& v0, const Eigen::Matrix<double, 3, 1>& v1, const Eigen::Matrix<double, 3, 1>& v2, const Eigen::Matrix<double, 3, 1>& v3);
+    bool is_degenerate(const Eigen::Matrix<double, 3, 1>& v0, const Eigen::Matrix<double, 3, 1>& v1, const Eigen::Matrix<double, 3, 1>& v2, const Eigen::Matrix<double, 3, 1>& v3);
 
-    bool is_out_envelope(Mesh& mesh, int v_id, const Vector3& new_pos, const AABBWrapper& tree);
-    bool is_out_boundary_envelope(const Mesh& mesh, int v_id, const Vector3& new_pos, const AABBWrapper& tree);
-    void sample_triangle(const std::array<Vector3, 3>& vs, std::vector<GEO::vec3>& ps, Scalar sampling_dist);
-    bool sample_triangle_and_check_is_out(const std::array<Vector3, 3>& vs, Scalar sampling_dist,
-            Scalar eps_2, const AABBWrapper& tree, GEO::index_t& prev_facet);
+    bool is_out_envelope(Mesh& mesh, int v_id, const Eigen::Matrix<double, 3, 1>& new_pos, const AABBWrapper& tree);
+    bool is_out_boundary_envelope(const Mesh& mesh, int v_id, const Eigen::Matrix<double, 3, 1>& new_pos, const AABBWrapper& tree);
+    void sample_triangle(const std::array<Eigen::Matrix<double, 3, 1>, 3>& vs, std::vector<GEO::vec3>& ps, double sampling_dist);
+    bool sample_triangle_and_check_is_out(const std::array<Eigen::Matrix<double, 3, 1>, 3>& vs, double sampling_dist,
+            double eps_2, const AABBWrapper& tree, GEO::index_t& prev_facet);
 
     bool is_bbox_edge(const Mesh& mesh, int v1_id, int v2_id, const std::vector<int>& n12_t_ids);
     bool is_surface_edge(const Mesh& mesh, int v1_id, int v2_id, const std::vector<int>& n12_t_ids);
@@ -66,12 +67,12 @@ namespace floatTetWild {
     bool is_valid_edge(const Mesh& mesh, int v1_id, int v2_id, const std::vector<int>& n12_t_ids);
 
     bool is_isolate_surface_point(const Mesh& mesh, int v_id);
-    bool is_point_out_envelope(const Mesh& mesh, const Vector3& p, const AABBWrapper& tree);
-    bool is_point_out_boundary_envelope(const Mesh& mesh, const Vector3& p, const AABBWrapper& tree);
+    bool is_point_out_envelope(const Mesh& mesh, const Eigen::Matrix<double, 3, 1>& p, const AABBWrapper& tree);
+    bool is_point_out_boundary_envelope(const Mesh& mesh, const Eigen::Matrix<double, 3, 1>& p, const AABBWrapper& tree);
 
     void get_new_tet_slots(Mesh& mesh, int n, std::vector<int>& new_conn_tets);
 
-    inline Scalar get_area(const Vector3& a, const Vector3& b, const Vector3& c) {
+    inline double get_area(const Eigen::Matrix<double, 3, 1>& a, const Eigen::Matrix<double, 3, 1>& b, const Eigen::Matrix<double, 3, 1>& c) {
         return ((b - c).cross(a - c)).norm();
     }
 
@@ -142,10 +143,10 @@ namespace floatTetWild {
     class ElementInQueue{
     public:
         std::array<int, 2> v_ids;
-        Scalar weight;
+        double weight;
 
         ElementInQueue(){}
-        ElementInQueue(const std::array<int, 2>& ids, Scalar w): v_ids(ids), weight(w){}
+        ElementInQueue(const std::array<int, 2>& ids, double w): v_ids(ids), weight(w){}
     };
     struct cmp_l {
         bool operator()(const ElementInQueue &e1, const ElementInQueue &e2) {
@@ -162,11 +163,11 @@ namespace floatTetWild {
         }
     };
 
-    Scalar AMIPS_energy_aux(const std::array<Scalar, 12>& T);
-    bool is_energy_unstable(const std::array<Scalar, 12>& T, Scalar res);
-    Scalar AMIPS_energy(const std::array<Scalar, 12>& T);
-    void AMIPS_jacobian(const std::array<Scalar, 12>& T, Vector3& result_0);
-    void AMIPS_hessian(const std::array<Scalar, 12>& T, Matrix3& result_0);
+    double AMIPS_energy_aux(const std::array<Scalar, 12>& T);
+    bool is_energy_unstable(const std::array<Scalar, 12>& T, double res);
+    double AMIPS_energy(const std::array<Scalar, 12>& T);
+    void AMIPS_jacobian(const std::array<Scalar, 12>& T, Eigen::Matrix<double, 3, 1>& result_0);
+    void AMIPS_hessian(const std::array<Scalar, 12>& T, Eigen::Matrix<double, 3, 3>& result_0);
 }
 
 

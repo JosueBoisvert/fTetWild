@@ -137,13 +137,13 @@ bool floatTetWild::remove_an_edge_32(Mesh& mesh, int v1_id, int v2_id, const std
             return false;
     }
     std::vector<Scalar> new_qs;
-    Scalar old_max_quality = 0;
+    double old_max_quality = 0;
     for(int t_id: old_t_ids) {
         if (tets[t_id].quality > old_max_quality)
             old_max_quality = tets[t_id].quality;
     }
     for(auto& t:new_tets) {
-        Scalar q = get_quality(tet_vertices[t[0]], tet_vertices[t[1]], tet_vertices[t[2]], tet_vertices[t[3]]);
+        double q = get_quality(tet_vertices[t[0]], tet_vertices[t[1]], tet_vertices[t[2]], tet_vertices[t[3]]);
         if (q >= old_max_quality)//or use > ???
             return false;
         new_qs.push_back(q);
@@ -313,20 +313,20 @@ bool floatTetWild::remove_an_edge_44(Mesh& mesh, int v1_id, int v2_id, const std
     ////check
     bool is_valid = false;
 //    std::vector<MeshTet> new_tets;
-    std::vector<Vector4i> new_tets;
+    std::vector<Eigen::Matrix<int, 4, 1>> new_tets;
     new_tets.reserve(4);
     std::vector<int> tags;
     std::array<int, 2> v_ids;
     std::vector<Scalar> new_qs;
-    Scalar old_max_quality = 0;
-    Scalar new_max_quality = 0;
+    double old_max_quality = 0;
+    double new_max_quality = 0;
     for (int t_id: old_t_ids) {
         if (tets[t_id].quality > old_max_quality)
             old_max_quality = tets[t_id].quality;
     }
     for (int i = 0; i < 2; i++) {
 //        std::vector<MeshTet> tmp_new_tets;
-        std::vector<Vector4i> tmp_new_tets;
+        std::vector<Eigen::Matrix<int, 4, 1>> tmp_new_tets;
         std::vector<int> tmp_tags;
         std::array<int, 2> tmp_v_ids;
         tmp_v_ids = {{n12_v_ids[0 + i], n12_v_ids[2 + i]}};
@@ -355,7 +355,7 @@ bool floatTetWild::remove_an_edge_44(Mesh& mesh, int v1_id, int v2_id, const std
 
         std::vector<Scalar> tmp_new_qs;
         for (auto &t: tmp_new_tets) {
-            Scalar q = get_quality(tet_vertices[t[0]], tet_vertices[t[1]], tet_vertices[t[2]], tet_vertices[t[3]]);
+            double q = get_quality(tet_vertices[t[0]], tet_vertices[t[1]], tet_vertices[t[2]], tet_vertices[t[3]]);
             if (q >= old_max_quality) {
                 is_break = true;
                 break;
@@ -499,8 +499,8 @@ bool floatTetWild::remove_an_edge_56(Mesh& mesh, int v1_id, int v2_id, const std
     n12_t_ids.push_back(n12_es[std::find(is_visited.begin(), is_visited.end(), false) - is_visited.begin()][2]);
 
     ////check
-    Scalar old_max_quality = 0;
-    Scalar new_max_quality = 0;
+    double old_max_quality = 0;
+    double new_max_quality = 0;
     for (int t_id: old_t_ids) {
         if (tets[t_id].quality > old_max_quality)
             old_max_quality = tets[t_id].quality;
@@ -508,14 +508,14 @@ bool floatTetWild::remove_an_edge_56(Mesh& mesh, int v1_id, int v2_id, const std
 
     std::unordered_map<int, std::array<Scalar, 2>> tet_qs;
 //    std::unordered_map<int, std::array<MeshTet, 2>> new_tets;
-    std::unordered_map<int, std::array<Vector4i, 2>> new_tets;
+    std::unordered_map<int, std::array<Eigen::Matrix<int, 4, 1>, 2>> new_tets;
     std::vector<bool> is_v_valid(5, true);
     for (int i = 0; i < n12_v_ids.size(); i++) {
         if (!is_v_valid[(i + 1) % 5] && !is_v_valid[(i - 1 + 5) % 5])
             continue;
 
 //        std::vector<MeshTet> new_ts;
-        std::vector<Vector4i> new_ts;
+        std::vector<Eigen::Matrix<int, 4, 1>> new_ts;
         new_ts.reserve(6);
         auto t = tets[n12_t_ids[i]];
         int it = t.find(v1_id);
@@ -539,7 +539,7 @@ bool floatTetWild::remove_an_edge_56(Mesh& mesh, int v1_id, int v2_id, const std
 //        new_ts.push_back(t);
         new_ts.push_back(t.indices);
 //        new_tets[i] = std::array<MeshTet, 2>({{new_ts[0], new_ts[1]}});
-        new_tets[i] = std::array<Vector4i, 2>({{new_ts[0], new_ts[1]}});
+        new_tets[i] = std::array<Eigen::Matrix<int, 4, 1>, 2>({{new_ts[0], new_ts[1]}});
 
         std::vector<Scalar> qs;
         for (auto &t: new_ts) {
@@ -557,7 +557,7 @@ bool floatTetWild::remove_an_edge_56(Mesh& mesh, int v1_id, int v2_id, const std
             continue;
 
 //        std::vector<MeshTet> new_ts;
-        std::vector<Vector4i> new_ts;
+        std::vector<Eigen::Matrix<int, 4, 1>> new_ts;
         new_ts.reserve(6);
         auto t = tets[n12_t_ids[(i + 2) % 5]];
         int it = t.find(v1_id);
@@ -596,7 +596,7 @@ bool floatTetWild::remove_an_edge_56(Mesh& mesh, int v1_id, int v2_id, const std
         selected_id = i;
         tet_qs[i + 5] = std::array<Scalar, 2>({{qs[0], qs[1]}});
 //        new_tets[i + 5] = std::array<MeshTet, 2>({{new_ts[0], new_ts[1]}});
-        new_tets[i + 5] = std::array<Vector4i, 2>({{new_ts[0], new_ts[1]}});
+        new_tets[i + 5] = std::array<Eigen::Matrix<int, 4, 1>, 2>({{new_ts[0], new_ts[1]}});
     }
     if (selected_id < 0)
         return false;

@@ -9,7 +9,8 @@
 #ifndef FLOATTETWILD_EDGESWAPPING_H
 #define FLOATTETWILD_EDGESWAPPING_H
 
-#include <floattetwild/Mesh.hpp>
+//#include <floattetwild/Mesh.hpp>
+#include "ftetwild.hpp"
 
 namespace floatTetWild {
     extern bool is_es_check;

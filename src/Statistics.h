@@ -9,7 +9,8 @@
 #pragma once
 
 #include <floattetwild/get_mem.h>
-#include <floattetwild/Mesh.hpp>
+//#include <floattetwild/Mesh.hpp>
+#include "ftetwild.hpp"
 #include <mutex>
 
 namespace floatTetWild {
@@ -36,16 +37,16 @@ namespace floatTetWild {
         int v_num = 0;
         int t_num = 0;
         double time = 0;
-        Scalar avg_energy = 0;
-        Scalar max_energy = 0;
+        double avg_energy = 0;
+        double max_energy = 0;
         int cnt_fail_inserted_face = -1;
 
         StateInfo(int _id,
                   double _time,
                   int _v_num,
                   int _t_num,
-                  Scalar _max_energy,
-                  Scalar _avg_energy,
+                  double _max_energy,
+                  double _avg_energy,
                   int _cnt_fail_inserted_face = -1)
                 : id(_id), time(_time), v_num(_v_num), t_num(_t_num), max_energy(_max_energy), avg_energy(_avg_energy),
                   cnt_fail_inserted_face(_cnt_fail_inserted_face) {}

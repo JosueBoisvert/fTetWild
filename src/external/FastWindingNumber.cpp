@@ -17,7 +17,7 @@ void floatTetWild::fast_winding_number(const Eigen::MatrixXd &V, const Eigen::Ma
     int order = 2;
     double accuracy_scale = 2.0;
 
-    std::vector<igl::FastWindingNumber::HDK_Sample::UT_Vector3T<float> > U(V.rows());
+    std::vector<igl::FastWindingNumber::HDK_Sample::UT_Eigen::Matrix<double, 3, 1>T<float> > U(V.rows());
     for (int i = 0; i < V.rows(); i++) {
         for (int j = 0; j < 3; j++) {
             U[i][j] = V(i, j);
@@ -30,7 +30,7 @@ void floatTetWild::fast_winding_number(const Eigen::MatrixXd &V, const Eigen::Ma
 
     //for(int p = 0;p<P.rows();p++)
     igl::parallel_for(P.rows(), [&](int p) {
-        igl::FastWindingNumber::HDK_Sample::UT_Vector3T<float> Pp;
+        igl::FastWindingNumber::HDK_Sample::UT_Eigen::Matrix<double, 3, 1>T<float> Pp;
         Pp[0] = P(p, 0);
         Pp[1] = P(p, 1);
         Pp[2] = P(p, 2);

@@ -37,8 +37,8 @@ int tetrahedralization(GEO::Mesh&       sf_mesh,
     }
     GEO::mesh_reorder(sf_mesh, GEO::MESH_ORDER_MORTON);
 
-    std::vector<Vector3>  input_vertices(sf_mesh.vertices.nb());
-    std::vector<Vector3i> input_faces(sf_mesh.facets.nb());
+    std::vector<Eigen::Matrix<double, 3, 1>>  input_vertices(sf_mesh.vertices.nb());
+    std::vector<Eigen::Matrix<int, 3, 1>> input_faces(sf_mesh.facets.nb());
     for (size_t i = 0; i < input_vertices.size(); i++) {
         input_vertices[i] << (sf_mesh.vertices.point(i))[0], (sf_mesh.vertices.point(i))[1],
           (sf_mesh.vertices.point(i))[2];
